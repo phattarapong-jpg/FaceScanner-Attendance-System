@@ -43,7 +43,9 @@ video{width:100%;max-width:320px;border-radius:12px;background:#000;transform:sc
 .rep-head .logo{height:80px;margin-bottom:4px}
 .rep-head h2{margin:0;font-size:1.3rem}.rep-head h3{margin:4px 0;font-size:1.1rem}.rep-head p{margin:0}
 .nw{white-space:nowrap}
+.ord{width:1%;white-space:nowrap}
 .nm{width:1%;white-space:nowrap}
+th.nm{text-align:center}
 @font-face{font-family:'THSarabunRep';font-weight:400;src:local('TH Sarabun New'),local('THSarabunNew'),local('TH SarabunPSK'),local('THSarabunPSK'),url('fonts/THSarabunNew.ttf')}
 @font-face{font-family:'THSarabunRep';font-weight:700;src:local('TH Sarabun New Bold'),local('THSarabunNew-Bold'),local('TH SarabunPSK Bold'),local('THSarabunPSK-Bold'),url('fonts/THSarabunNew-Bold.ttf')}
 #reportOut,#reportOut table,#reportOut p{font-family:'THSarabunRep','TH Sarabun New','TH SarabunPSK','Sarabun',sans-serif;font-size:16pt;font-weight:400}
@@ -270,7 +272,7 @@ async function loadReport() {
     const present = new Set(rows.map(x => x.userId));
     let nLate = 0, nEarly = 0;
     const full = $('rmode').value === 'full';
-    h += '<table><thead><tr><th class="c nw">ลำดับ</th>' + (full ? '<th class="nw">รหัส</th>' : '') +
+    h += '<table><thead><tr><th class="c ord">ลำดับ</th>' + (full ? '<th class="nw">รหัส</th>' : '') +
          '<th class="nm">ชื่อ-สกุล</th><th class="c">เวลาเข้า</th><th class="c">เวลาออก</th>' +
          (full ? '<th class="c">สาย (นาที)</th><th class="c">ออกก่อน (นาที)</th><th class="c">รวมเวลาทำงาน</th>' : '') +
          '<th class="c">สถานะ</th></tr></thead><tbody>' +
@@ -287,8 +289,9 @@ async function loadReport() {
           '<td class="c">' + st + '</td></tr>';
       }).join('') + (rows.length ? '' : '<tr><td colspan="' + (full ? 9 : 5) + '" class="c muted">ไม่มีข้อมูลการลงเวลาในวันนี้</td></tr>') + '</tbody></table>';
     const abs = r.users.filter(u => !present.has(u.id));
-    h += '<p>สรุป: มาทำงาน <b>' + present.size + '</b> คน | มาสาย <b>' + nLate + '</b> คน | ออกก่อนเวลา <b>' + nEarly + '</b> คน | ไม่มา <b>' + abs.length + '</b> คน' +
-         (abs.length ? ' (' + abs.map(u => esc(u.name)).join(', ') + ')' : '') + '</p>';
+    h += '<p>สรุป: มาทำงาน <b>' + present.size + '</b> คน | มาสาย <b>' + nLate + '</b> คน | ออกก่อนเวลา <b>' + nEarly + '</b> คน | ไม่มา <b>' + abs.length + '</b> คน</p>';
+    if (abs.length) h += '<p style="margin-bottom:0"><b>รายชื่อผู้ไม่มาทำงาน</b></p>' +
+      abs.map((u, i) => '<div>' + (i + 1) + '. ' + esc(u.name) + '</div>').join('');
   } else {
     const by = {};
     r.users.forEach(u => by[u.id] = { id: u.id, name: u.name, created: u.createdAt || '', days: 0, late: 0, h: 0 });
@@ -297,7 +300,7 @@ async function loadReport() {
       u.days++; if (x.status === 'สาย') u.late++; u.h += hrs(x.timeIn, x.timeOut);
     });
     const list = Object.values(by).sort((p, q) => p.id.localeCompare(q.id));
-    h += '<table><thead><tr><th class="c nw">ลำดับ</th><th class="nw">รหัส</th><th class="nm">ชื่อ-สกุล</th><th class="c">มาทำงาน (วัน)</th><th class="c">มาสาย (ครั้ง)</th>' +
+    h += '<table><thead><tr><th class="c ord">ลำดับ</th><th class="nw">รหัส</th><th class="nm">ชื่อ-สกุล</th><th class="c">มาทำงาน (วัน)</th><th class="c">มาสาย (ครั้ง)</th>' +
          '<th class="c">ขาดงาน (วัน)</th><th class="c">รวมชั่วโมงทำงาน</th></tr></thead><tbody>' +
       list.map((u, i) => {
         const from = u.created && u.created > a ? u.created : a;
