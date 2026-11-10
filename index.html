@@ -45,8 +45,14 @@ let pos = null, busy = false, hits = 0;
 
 const setMsg = t => $('msg').textContent = t;
 
+async function initTf() {
+  try { await faceapi.tf.setBackend('webgl'); await faceapi.tf.ready(); }
+  catch (e) { await faceapi.tf.setBackend('cpu'); await faceapi.tf.ready(); }
+}
+
 async function init() {
   try {
+    await initTf();
     fetch(CONFIG.API_URL).then(r => r.json()).then(c => { if (c.org) $('org').textContent = c.org; }).catch(() => {});
     setMsg('กำลังโหลดโมเดลจดจำใบหน้า...');
     await Promise.all([
