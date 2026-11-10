@@ -158,6 +158,8 @@ video{width:100%;max-width:320px;border-radius:12px;background:#000;transform:sc
 <script>
 const $ = id => document.getElementById(id);
 const MODEL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
+const CFG_ERR = typeof CONFIG === 'undefined' || !CONFIG.API_URL;
+if (typeof CONFIG === 'undefined') window.CONFIG = {};
 const LOGO = CONFIG.LOGO_URL || 'https://drive.google.com/thumbnail?id=1mrJbjgs8PdZS-5jKImMdYR2Ng2w0WdLA&sz=w600';
 const TH_M = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 let TOKEN = sessionStorage.getItem('fs_tk') || '', editId = '', newDesc = null, modelsOk = false, USERS = [], NEXT = '';
@@ -165,6 +167,7 @@ document.querySelectorAll('img.logo').forEach(i => i.src = LOGO);
 
 /* ---------- API ---------- */
 async function api(action, data = {}) {
+  if (CFG_ERR) throw new Error('อ่านไฟล์ config.js ไม่ได้ กรุณาตรวจว่าไฟล์ชื่อ config.js (ตัวพิมพ์เล็ก) อยู่โฟลเดอร์เดียวกับหน้านี้ และมีเครื่องหมาย , คั่นระหว่างบรรทัด');
   const r = await fetch(CONFIG.API_URL, { method: 'POST', body: JSON.stringify({ action, token: TOKEN, ...data }) }).then(r => r.json());
   if (r.error === 'unauthorized') { logout(); throw new Error('หมดเวลาเข้าสู่ระบบ'); }
   return r;
