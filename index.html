@@ -50,6 +50,8 @@ const TH_M = ['มกราคม','กุมภาพันธ์','มีน�
 const $ = id => document.getElementById(id);
 let pos = null, busy = false, hits = 0, cfg = { start: '08:30', end: '16:30' };
 
+const CFG_ERR = typeof CONFIG === 'undefined' || !CONFIG.API_URL;
+if (typeof CONFIG === 'undefined') window.CONFIG = {};
 $('logo').src = CONFIG.LOGO_URL || 'https://drive.google.com/thumbnail?id=1mrJbjgs8PdZS-5jKImMdYR2Ng2w0WdLA&sz=w600';
 const setMsg = t => $('msg').textContent = t;
 const p2 = n => String(n).padStart(2, '0');
@@ -67,6 +69,7 @@ async function initTf() {
 }
 
 async function init() {
+  if (CFG_ERR) return setMsg('อ่านไฟล์ config.js ไม่ได้ กรุณาตรวจว่าไฟล์ชื่อ config.js (ตัวพิมพ์เล็ก) อยู่โฟลเดอร์เดียวกับหน้านี้ และมีเครื่องหมาย , คั่นระหว่างบรรทัด');
   try {
     await initTf();
     fetch(CONFIG.API_URL).then(r => r.json()).then(c => {
