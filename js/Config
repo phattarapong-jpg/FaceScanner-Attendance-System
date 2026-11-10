@@ -1,0 +1,4 @@
+// วาง URL ของ Apps Script Web app (ลงท้ายด้วย /exec) ที่นี่
+const CONFIG = {
+  API_URL: 'https://script.google.com/macros/s/PASTE_YOUR_DEPLOYMENT_ID/exec'
+};
