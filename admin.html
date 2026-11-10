@@ -222,7 +222,7 @@ function range(type, s) {
 const secs = t => { if (!t) return 0; const p = t.split(':').map(Number); return p[0] * 3600 + p[1] * 60 + (p[2] || 0); };
 const mins = t => Math.floor(secs(t) / 60);
 const hrs = (i, o) => (i && o) ? Math.max(0, (secs(o) - secs(i)) / 3600) : 0;
-const hm = h => Math.floor(h) + ' ชม. ' + pad(Math.round((h - Math.floor(h)) * 60 % 60)) + ' นาที';
+const hm = h => { const t = Math.round(h * 60); return Math.floor(t / 60) + ' ชม. ' + (t % 60) + ' นาที'; };
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 /** นับวันทำการ (จันทร์-ศุกร์) ตั้งแต่ from ถึง to โดยนับถึงวันนี้ หากเลยเวลาเลิกงานแล้ว มิฉะนั้นนับถึงเมื่อวาน */
 function workdays(from, to, endHM) {
@@ -286,7 +286,7 @@ async function loadReport() {
         const abs = Math.max(0, workdays(from, b, r.end) - u.days);
         return '<tr><td class="c">' + (i + 1) + '</td><td>' + esc(u.id) + '</td><td>' + esc(u.name) + '</td><td class="c">' + u.days +
           '</td><td class="c ' + (u.late ? 'late' : '') + '">' + u.late + '</td><td class="c ' + (abs ? 'late' : '') + '">' + abs +
-          '</td><td class="c">' + u.h.toFixed(2) + ' ชม. <span class="muted">(' + hm(u.h) + ')</span></td></tr>';
+          '</td><td class="c">' + hm(u.h) + '</td></tr>';
       }).join('') + (list.length ? '' : '<tr><td colspan="7" class="c muted">ไม่มีข้อมูล</td></tr>') + '</tbody></table>' +
       '<p class="muted">ขาดงาน = วันทำการ (จันทร์-ศุกร์) ที่ผ่านมาแล้ว ซึ่งไม่มีบันทึกเข้างาน (ยังไม่หักวันหยุดนักขัตฤกษ์/วันลา)</p>';
   }
