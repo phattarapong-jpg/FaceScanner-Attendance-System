@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FaceScanner ลงเวลาเข้า-ออกงาน</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f172a;--card:#1e293b;--tx:#f1f5f9;--mut:#94a3b8;--ok:#22c55e;--bad:#ef4444;--ac:#38bdf8}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--tx);font-family:'Sarabun',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;padding:16px}
+h1{font-size:1.25rem;margin:4px 0}
+.sub{color:var(--mut);font-size:.9rem;margin-bottom:12px}
+.cam{position:relative;width:100%;max-width:420px;aspect-ratio:3/4;background:#000;border-radius:20px;overflow:hidden;border:3px solid var(--ac)}
+.cam video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.ring{position:absolute;inset:12% 14%;border:3px dashed rgba(255,255,255,.55);border-radius:50%;pointer-events:none}
+.msg{margin-top:14px;font-size:1.1rem;text-align:center;min-height:1.6em}
+.gps{margin-top:6px;font-size:.85rem;color:var(--mut)}
+.result{display:none;position:absolute;inset:0;background:rgba(15,23,42,.92);flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
+.result.show{display:flex}
+.result .big{font-size:1.6rem;font-weight:700;margin:8px 0}
+.result .tm{font-size:2.2rem;font-weight:700}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+a.admin{margin-top:18px;color:var(--mut);font-size:.85rem}
+</style>
+</head>
+<body>
+<h1 id="org">FaceScanner</h1>
+<div class="sub">มองกล้องเพื่อลงเวลาเข้า-ออกงาน</div>
+<div class="cam">
+  <video id="v" playsinline muted></video>
+  <div class="ring"></div>
+  <div class="result" id="res"></div>
+</div>
+<div class="msg" id="msg">กำลังเริ่มต้น...</div>
+<div class="gps" id="gps">GPS: รอตำแหน่ง...</div>
+<a class="admin" href="admin.html">สำหรับผู้ดูแลระบบ</a>
+
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
+<script src="config.js"></script>
+<script>
+const MODEL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
+const $ = id => document.getElementById(id);
+let pos = null, busy = false, hits = 0;
+
+const setMsg = t => $('msg').textContent = t;
+
+async function init() {
+  try {
+    fetch(CONFIG.API_URL).then(r => r.json()).then(c => { if (c.org) $('org').textContent = c.org; }).catch(() => {});
+    setMsg('กำลังโหลดโมเดลจดจำใบหน้า...');
+    await Promise.all([
+      faceapi.nets.tinyFaceDetector.loadFromUri(MODEL),
+      faceapi.nets.faceLandmark68Net.loadFromUri(MODEL),
+      faceapi.nets.faceRecognitionNet.loadFromUri(MODEL)
+    ]);
+    navigator.geolocation.watchPosition(
+      p => { pos = p.coords; $('gps').textContent = 'GPS พร้อมใช้งาน (±' + Math.round(p.coords.accuracy) + ' ม.)'; },
+      () => { pos = null; $('gps').textContent = 'GPS: กรุณาอนุญาตการเข้าถึงตำแหน่ง'; },
+      { enableHighAccuracy: true, maximumAge: 5000 });
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 }, audio: false });
+    $('v').srcObject = stream;
+    await $('v').play();
+    loop();
+  } catch (e) {
+    setMsg('เปิดกล้องไม่ได้: ' + e.message);
+  }
+}
+
+async function loop() {
+  if (!busy) {
+    const det = await faceapi
+      .detectSingleFace($('v'), new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.6 }))
+      .withFaceLandmarks().withFaceDescriptor();
+    if (det) {
+      hits++;
+      setMsg('ตรวจพบใบหน้า กรุณาอยู่นิ่งสักครู่...');
+      if (hits >= 3) { busy = true; hits = 0; await send(Array.from(det.descriptor)); }
+    } else { hits = 0; setMsg('กรุณามองกล้อง'); }
+  }
+  setTimeout(loop, 400);
+}
+
+async function send(descriptor) {
+  if (!pos) { show(false, 'ยังไม่ได้ตำแหน่ง GPS', 'กรุณาเปิด GPS แล้วลองใหม่'); return; }
+  setMsg('กำลังตรวจสอบ...');
+  try {
+    const r = await fetch(CONFIG.API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'scan', descriptor, lat: pos.latitude, lng: pos.longitude })
+    }).then(r => r.json());
+    if (r.ok) {
+      const label = r.type === 'IN' ? 'เข้างาน' : 'ออกงาน';
+      show(true, r.name, label + ' ' + (r.type === 'IN' ? '(' + r.status + ')' : ''), r.time, r.note);
+    } else show(false, 'ไม่สำเร็จ', r.error);
+  } catch (e) { show(false, 'เชื่อมต่อไม่ได้', e.message); }
+}
+
+function show(ok, title, line, time, note) {
+  const el = $('res');
+  el.innerHTML = '<div class="' + (ok ? 'ok' : 'bad') + '" style="font-size:3rem">' + (ok ? '✔' : '✖') + '</div>' +
+    '<div class="big">' + title + '</div><div>' + (line || '') + '</div>' +
+    (time ? '<div class="tm">' + time + '</div>' : '') + (note ? '<div class="sub">' + note + '</div>' : '');
+  el.classList.add('show');
+  setTimeout(() => { el.classList.remove('show'); busy = false; hits = 0; }, 4500);
+}
+
+init();
+</script>
+</body>
+</html>

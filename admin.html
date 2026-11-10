@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ผู้ดูแลระบบ - FaceScanner</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1f5f9;--card:#fff;--tx:#0f172a;--mut:#64748b;--ac:#2563eb;--bd:#e2e8f0;--ok:#16a34a;--bad:#dc2626}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:'Sarabun',system-ui,sans-serif}
+header{background:var(--ac);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+header h1{margin:0;font-size:1.1rem}
+main{max-width:1000px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:16px}
+.tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.tabs button{padding:8px 16px;border:1px solid var(--bd);background:#fff;border-radius:999px;font:inherit;cursor:pointer}
+.tabs button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+input,select,button{font:inherit}
+input,select{padding:8px 10px;border:1px solid var(--bd);border-radius:8px;width:100%}
+label{display:block;font-size:.85rem;color:var(--mut);margin:8px 0 2px}
+.btn{padding:8px 16px;border:0;border-radius:8px;background:var(--ac);color:#fff;cursor:pointer}
+.btn.sec{background:#e2e8f0;color:var(--tx)}.btn.red{background:var(--bad)}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+.row>div{flex:1;min-width:140px}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{border:1px solid var(--bd);padding:6px 8px;text-align:left}
+th{background:#f8fafc}
+.late{color:var(--bad);font-weight:600}.good{color:var(--ok)}
+.hide{display:none}
+.login{max-width:320px;margin:15vh auto}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+video{width:100%;max-width:320px;border-radius:12px;background:#000;transform:scaleX(-1)}
+.muted{color:var(--mut);font-size:.85rem}
+.ptitle{text-align:center;display:none}
+@media print{
+  body{background:#fff}header,.tabs,.noprint,#tab-users,#tab-set{display:none!important}
+  .card{border:0;padding:0}.ptitle{display:block}
+  table{font-size:11pt}
+  @page{size:A4;margin:14mm}
+}
+</style>
+</head>
+<body>
+
+<div id="loginBox" class="card login">
+  <h2 style="margin-top:0">ผู้ดูแลระบบ</h2>
+  <label>PIN</label>
+  <input id="pin" type="password" inputmode="numeric" autocomplete="off">
+  <p id="loginErr" style="color:var(--bad)"></p>
+  <button class="btn" style="width:100%" onclick="login()">เข้าสู่ระบบ</button>
+  <p class="muted" style="text-align:center"><a href="index.html">กลับหน้าสแกนหน้า</a></p>
+</div>
+
+<div id="app" class="hide">
+<header><h1>FaceScanner • ผู้ดูแลระบบ</h1><button class="btn sec" onclick="logout()">ออกจากระบบ</button></header>
+<main>
+  <div class="tabs noprint">
+    <button class="on" data-t="rep">รายงาน</button>
+    <button data-t="users">พนักงาน / ลงทะเบียนใบหน้า</button>
+    <button data-t="set">ตั้งค่า</button>
+  </div>
+
+  <!-- รายงาน -->
+  <section id="tab-rep">
+    <div class="card noprint">
+      <div class="row">
+        <div><label>ประเภทรายงาน</label>
+          <select id="rtype"><option value="daily">รายวัน</option><option value="weekly">รายสัปดาห์</option><option value="monthly">รายเดือน</option></select></div>
+        <div><label>เลือกวันที่ (อ้างอิง)</label><input type="date" id="rdate"></div>
+        <div style="flex:0"><button class="btn" onclick="loadReport()">แสดงรายงาน</button></div>
+        <div style="flex:0"><button class="btn sec" onclick="window.print()">พิมพ์</button></div>
+      </div>
+    </div>
+    <div class="card" id="reportOut"><p class="muted">เลือกประเภทและวันที่ แล้วกด "แสดงรายงาน"</p></div>
+  </section>
+
+  <!-- พนักงาน -->
+  <section id="tab-users" class="hide">
+    <div class="card">
+      <h3 style="margin-top:0" id="formTitle">เพิ่มพนักงานใหม่</h3>
+      <div class="grid2">
+        <div><label>ชื่อ-สกุล</label><input id="uname"></div>
+        <div><label>ตำแหน่ง</label><input id="upos"></div>
+        <div><label>หน่วยงาน/ฝ่าย</label><input id="udep"></div>
+      </div>
+      <div style="margin-top:12px">
+        <video id="cam" playsinline muted></video>
+        <div class="muted" id="camMsg">กดเปิดกล้องเพื่อลงทะเบียนใบหน้า</div>
+        <button class="btn sec" onclick="openCam()">เปิดกล้อง</button>
+        <button class="btn" onclick="enroll()">ถ่ายใบหน้า (5 ภาพ)</button>
+        <span id="faceState" class="good"></span>
+      </div>
+      <div style="margin-top:12px">
+        <button class="btn" onclick="saveUser()">บันทึก</button>
+        <button class="btn sec" onclick="resetForm()">ล้างฟอร์ม</button>
+      </div>
+    </div>
+    <div class="card">
+      <table><thead><tr><th>รหัส</th><th>ชื่อ</th><th>ตำแหน่ง</th><th>ใบหน้า</th><th>สถานะ</th><th></th></tr></thead>
+      <tbody id="userRows"></tbody></table>
+    </div>
+  </section>
+
+  <!-- ตั้งค่า -->
+  <section id="tab-set" class="hide">
+    <div class="card">
+      <div class="grid2">
+        <div><label>ชื่อหน่วยงาน</label><input id="s_ORG_NAME"></div>
+        <div><label>เวลาเริ่มงาน (HH:mm) เกินนี้ = สาย</label><input id="s_WORK_START"></div>
+        <div><label>ละติจูดที่ทำงาน</label><input id="s_LAT"></div>
+        <div><label>ลองจิจูดที่ทำงาน</label><input id="s_LNG"></div>
+        <div><label>รัศมีที่อนุญาต (เมตร)</label><input id="s_RADIUS"></div>
+        <div><label>ค่าเกณฑ์จับคู่ใบหน้า (ยิ่งน้อยยิ่งเข้มงวด 0.4-0.6)</label><input id="s_MATCH_THRESHOLD"></div>
+        <div><label>เปลี่ยน PIN (เว้นว่างถ้าไม่เปลี่ยน)</label><input id="s_ADMIN_PIN" type="password"></div>
+      </div>
+      <p><button class="btn sec" onclick="useHere()">ใช้ตำแหน่งปัจจุบันเป็นจุดที่ทำงาน</button>
+         <button class="btn" onclick="saveSettings()">บันทึกการตั้งค่า</button></p>
+    </div>
+  </section>
+</main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
+<script src="config.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const MODEL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
+let TOKEN = sessionStorage.getItem('fs_tk') || '', editId = '', newDesc = null, modelsOk = false;
+
+async function api(action, data = {}) {
+  const r = await fetch(CONFIG.API_URL, { method: 'POST', body: JSON.stringify({ action, token: TOKEN, ...data }) }).then(r => r.json());
+  if (r.error === 'unauthorized') { logout(); throw new Error('หมดเวลาเข้าสู่ระบบ'); }
+  return r;
+}
+async function login() {
+  $('loginErr').textContent = '';
+  try {
+    const r = await api('login', { pin: $('pin').value });
+    if (!r.ok) return $('loginErr').textContent = r.error;
+    TOKEN = r.token; sessionStorage.setItem('fs_tk', TOKEN); start();
+  } catch (e) { $('loginErr').textContent = e.message; }
+}
+function logout() { TOKEN = ''; sessionStorage.removeItem('fs_tk'); $('app').classList.add('hide'); $('loginBox').classList.remove('hide'); }
+function start() {
+  $('loginBox').classList.add('hide'); $('app').classList.remove('hide');
+  $('rdate').value = fmt(new Date());
+  loadUsers(); loadSettings();
+}
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
+  ['rep', 'users', 'set'].forEach(t => $('tab-' + t).classList.toggle('hide', t !== b.dataset.t));
+});
+
+/* ---------- วันที่ ---------- */
+const pad = n => String(n).padStart(2, '0');
+const fmt = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const parse = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const thDate = s => parse(s).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
+function range(type, s) {
+  const d = parse(s);
+  if (type === 'daily') return [s, s];
+  if (type === 'weekly') {
+    const a = new Date(d); a.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+    const b = new Date(a); b.setDate(a.getDate() + 6);
+    return [fmt(a), fmt(b)];
+  }
+  return [fmt(new Date(d.getFullYear(), d.getMonth(), 1)), fmt(new Date(d.getFullYear(), d.getMonth() + 1, 0))];
+}
+function workdays(a, b) {
+  const end = new Date(Math.min(parse(b), parse(fmt(new Date()))));
+  let n = 0;
+  for (let d = parse(a); d <= end; d.setDate(d.getDate() + 1)) if (d.getDay() % 6) n++;
+  return n;
+}
+const secs = t => { if (!t) return 0; const p = t.split(':').map(Number); return p[0] * 3600 + p[1] * 60 + (p[2] || 0); };
+const hrs = (i, o) => (i && o) ? Math.max(0, (secs(o) - secs(i)) / 3600) : 0;
+
+/* ---------- รายงาน ---------- */
+async function loadReport() {
+  const type = $('rtype').value, [a, b] = range(type, $('rdate').value);
+  $('reportOut').innerHTML = '<p class="muted">กำลังโหลด...</p>';
+  const r = await api('report', { from: a, to: b });
+  if (!r.ok) return $('reportOut').innerHTML = '<p class="late">' + r.error + '</p>';
+  const title = { daily: 'รายงานการลงเวลาประจำวัน', weekly: 'รายงานการลงเวลาประจำสัปดาห์', monthly: 'รายงานการลงเวลาประจำเดือน' }[type];
+  const period = a === b ? thDate(a) : thDate(a) + ' - ' + thDate(b);
+  let h = '<div class="ptitle"></div><h2 style="text-align:center;margin:0">' + esc(r.org || '') + '</h2>' +
+          '<h3 style="text-align:center;margin:4px 0">' + title + '</h3>' +
+          '<p style="text-align:center;margin:0 0 12px">' + period + '</p>';
+
+  const wd = workdays(a, b), by = {};
+  r.users.forEach(u => by[u.id] = { name: u.name, days: 0, late: 0, h: 0 });
+  r.rows.forEach(x => {
+    const u = by[x.userId] || (by[x.userId] = { name: x.name, days: 0, late: 0, h: 0 });
+    u.days++; if (x.status === 'สาย') u.late++; u.h += hrs(x.timeIn, x.timeOut);
+  });
+
+  if (type === 'daily') {
+    const present = new Set(r.rows.map(x => x.userId));
+    h += '<table><thead><tr><th>#</th><th>ชื่อ</th><th>เข้างาน</th><th>ออกงาน</th><th>สถานะ</th><th>ชม.</th></tr></thead><tbody>' +
+      r.rows.map((x, i) => '<tr><td>' + (i + 1) + '</td><td>' + esc(x.name) + '</td><td>' + x.timeIn + '</td><td>' + (x.timeOut || '-') +
+        '</td><td class="' + (x.status === 'สาย' ? 'late' : 'good') + '">' + x.status + '</td><td>' + hrs(x.timeIn, x.timeOut).toFixed(2) + '</td></tr>').join('') +
+      '</tbody></table>';
+    const abs = r.users.filter(u => !present.has(u.id));
+    h += '<p>มา ' + present.size + ' คน / ไม่มา ' + abs.length + ' คน' + (abs.length ? ': ' + abs.map(u => esc(u.name)).join(', ') : '') + '</p>';
+  } else {
+    h += '<table><thead><tr><th>#</th><th>ชื่อ</th><th>มาทำงาน (วัน)</th><th>สาย (ครั้ง)</th><th>ขาด (วัน)</th><th>รวม (ชม.)</th></tr></thead><tbody>' +
+      Object.values(by).map((u, i) => '<tr><td>' + (i + 1) + '</td><td>' + esc(u.name) + '</td><td>' + u.days + '</td><td class="' + (u.late ? 'late' : '') + '">' + u.late +
+        '</td><td>' + Math.max(0, wd - u.days) + '</td><td>' + u.h.toFixed(1) + '</td></tr>').join('') +
+      '</tbody></table><p class="muted">วันทำการ (จันทร์-ศุกร์) นับถึงวันนี้ = ' + wd + ' วัน (ยังไม่หักวันหยุดนักขัตฤกษ์/วันลา)</p>';
+    h += '<h4>รายละเอียดรายวัน</h4><table><thead><tr><th>วันที่</th><th>ชื่อ</th><th>เข้า</th><th>ออก</th><th>สถานะ</th></tr></thead><tbody>' +
+      r.rows.sort((x, y) => x.date.localeCompare(y.date) || x.name.localeCompare(y.name, 'th'))
+        .map(x => '<tr><td>' + x.date + '</td><td>' + esc(x.name) + '</td><td>' + x.timeIn + '</td><td>' + (x.timeOut || '-') +
+          '</td><td class="' + (x.status === 'สาย' ? 'late' : 'good') + '">' + x.status + '</td></tr>').join('') + '</tbody></table>';
+  }
+  h += '<div style="display:flex;justify-content:space-around;margin-top:48px" class="ptitle"><div>ลงชื่อ ................................ ผู้จัดทำ</div><div>ลงชื่อ ................................ ผู้ตรวจสอบ</div></div>';
+  $('reportOut').innerHTML = h;
+}
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/* ---------- พนักงาน ---------- */
+async function loadUsers() {
+  const r = await api('users');
+  $('userRows').innerHTML = r.users.map(u => '<tr><td>' + u.id + '</td><td>' + esc(u.name) + '</td><td>' + esc(u.position) + '</td><td>' +
+    (u.hasFace ? '✔' : '<span class="late">ยังไม่มี</span>') + '</td><td>' + (u.active ? 'ใช้งาน' : 'ปิด') + '</td><td>' +
+    '<button class="btn sec" onclick=\'editUser(' + JSON.stringify(u).replace(/'/g, '&#39;') + ')\'>แก้ไข</button> ' +
+    '<button class="btn ' + (u.active ? 'red' : '') + '" onclick="toggleUser(\'' + u.id + '\',' + !u.active + ')">' + (u.active ? 'ปิดใช้งาน' : 'เปิดใช้งาน') + '</button></td></tr>').join('');
+}
+function editUser(u) {
+  editId = u.id; $('uname').value = u.name; $('upos').value = u.position || ''; $('udep').value = u.department || '';
+  $('formTitle').textContent = 'แก้ไข: ' + u.id + ' (ถ่ายใบหน้าใหม่ได้ถ้าต้องการ)'; newDesc = null; $('faceState').textContent = '';
+  window.scrollTo(0, 0);
+}
+function resetForm() { editId = ''; newDesc = null; ['uname', 'upos', 'udep'].forEach(i => $(i).value = ''); $('formTitle').textContent = 'เพิ่มพนักงานใหม่'; $('faceState').textContent = ''; }
+async function toggleUser(id, active) { await api('deleteUser', { id, active }); loadUsers(); }
+async function saveUser() {
+  if (!$('uname').value.trim()) return alert('กรุณากรอกชื่อ');
+  if (!editId && !newDesc) return alert('กรุณาถ่ายใบหน้าก่อนบันทึก');
+  const r = await api('saveUser', { id: editId, name: $('uname').value.trim(), position: $('upos').value, department: $('udep').value, descriptor: newDesc });
+  if (!r.ok) return alert(r.error);
+  resetForm(); loadUsers();
+}
+async function openCam() {
+  try {
+    if (!modelsOk) {
+      $('camMsg').textContent = 'กำลังโหลดโมเดล...';
+      await Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri(MODEL), faceapi.nets.faceLandmark68Net.loadFromUri(MODEL), faceapi.nets.faceRecognitionNet.loadFromUri(MODEL)]);
+      modelsOk = true;
+    }
+    $('cam').srcObject = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+    await $('cam').play(); $('camMsg').textContent = 'กล้องพร้อม: ให้ผู้ลงทะเบียนมองตรงและขยับหน้าเล็กน้อย';
+  } catch (e) { $('camMsg').textContent = 'เปิดกล้องไม่ได้: ' + e.message; }
+}
+async function enroll() {
+  if (!modelsOk || !$('cam').srcObject) return alert('กรุณากดเปิดกล้องก่อน');
+  const samples = [];
+  for (let tries = 0; samples.length < 5 && tries < 30; tries++) {
+    const d = await faceapi.detectSingleFace($('cam'), new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.6 })).withFaceLandmarks().withFaceDescriptor();
+    if (d) { samples.push(Array.from(d.descriptor)); $('camMsg').textContent = 'ถ่ายแล้ว ' + samples.length + '/5'; }
+    await new Promise(r => setTimeout(r, 400));
+  }
+  if (samples.length < 5) return $('camMsg').textContent = 'ตรวจไม่พบใบหน้าชัดเจน ลองใหม่';
+  newDesc = samples[0].map((_, i) => samples.reduce((s, v) => s + v[i], 0) / samples.length);
+  $('faceState').textContent = '✔ ถ่ายใบหน้าเรียบร้อย';
+}
+
+/* ---------- ตั้งค่า ---------- */
+const KEYS = ['ORG_NAME', 'WORK_START', 'LAT', 'LNG', 'RADIUS', 'MATCH_THRESHOLD'];
+async function loadSettings() {
+  const r = await api('getSettings');
+  KEYS.forEach(k => $('s_' + k).value = r.settings[k] || '');
+}
+async function saveSettings() {
+  const settings = {};
+  KEYS.concat('ADMIN_PIN').forEach(k => settings[k] = $('s_' + k).value);
+  const r = await api('saveSettings', { settings });
+  alert(r.ok ? 'บันทึกแล้ว' : r.error); $('s_ADMIN_PIN').value = '';
+}
+function useHere() {
+  navigator.geolocation.getCurrentPosition(p => { $('s_LAT').value = p.coords.latitude.toFixed(6); $('s_LNG').value = p.coords.longitude.toFixed(6); },
+    e => alert('อ่านตำแหน่งไม่ได้: ' + e.message), { enableHighAccuracy: true });
+}
+
+if (TOKEN) start();
+</script>
+</body>
+</html>
