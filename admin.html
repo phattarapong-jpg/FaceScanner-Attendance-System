@@ -42,6 +42,15 @@ video{width:100%;max-width:320px;border-radius:12px;background:#000;transform:sc
 .rep-head{text-align:center;margin-bottom:12px}
 .rep-head .logo{height:80px;margin-bottom:4px}
 .rep-head h2{margin:0;font-size:1.3rem}.rep-head h3{margin:4px 0;font-size:1.1rem}.rep-head p{margin:0}
+.nw{white-space:nowrap}
+.nm{width:1%;white-space:nowrap}
+@font-face{font-family:'THSarabunRep';font-weight:400;src:local('TH Sarabun New'),local('THSarabunNew'),local('TH SarabunPSK'),local('THSarabunPSK'),url('fonts/THSarabunNew.ttf')}
+@font-face{font-family:'THSarabunRep';font-weight:700;src:local('TH Sarabun New Bold'),local('THSarabunNew-Bold'),local('TH SarabunPSK Bold'),local('THSarabunPSK-Bold'),url('fonts/THSarabunNew-Bold.ttf')}
+#reportOut,#reportOut table,#reportOut p{font-family:'THSarabunRep','TH Sarabun New','TH SarabunPSK','Sarabun',sans-serif;font-size:16pt;font-weight:400}
+#reportOut .muted,#reportOut .good,#reportOut .late,#reportOut .early{font-size:inherit}
+#reportOut .good,#reportOut .late,#reportOut .early{font-weight:400}
+#reportOut th{font-size:18pt;font-weight:700}
+#reportOut .rep-head h2,#reportOut .rep-head h3,#reportOut .rep-head p.hd{font-family:inherit;font-size:18pt;font-weight:700;margin:2px 0}
 .sign{display:none;justify-content:space-around;margin-top:56px;text-align:center}
 @media print{
   body{background:#fff}
@@ -49,7 +58,6 @@ video{width:100%;max-width:320px;border-radius:12px;background:#000;transform:sc
   main{padding:0;max-width:none}
   .card{border:0;padding:0;margin:0}
   .sign{display:flex}
-  table{font-size:10.5pt}
   th{background:#eee!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   @page{size:A4;margin:14mm}
 }
@@ -247,7 +255,7 @@ async function loadReport() {
                : type === 'weekly' ? 'ระหว่างวันที่ ' + thDate(a) + ' ถึง ' + thDate(b)
                : 'ประจำเดือน ' + thMonth(a);
   let h = '<div class="rep-head"><img class="logo" src="' + LOGO + '" alt="" onerror="this.style.display=\'none\'"><h2>' + esc(r.org) + '</h2>' +
-          '<h3>' + title + '</h3><p>' + period + '</p>' +
+          '<h3>' + title + '</h3><p class="hd">' + period + '</p>' +
           '<p class="muted">เวลาทำงาน ' + r.start + ' - ' + r.end + ' น.</p></div>';
 
   if (type === 'daily') {
@@ -255,7 +263,7 @@ async function loadReport() {
     const rows = r.rows.slice().sort((x, y) => x.timeIn.localeCompare(y.timeIn));
     const present = new Set(rows.map(x => x.userId));
     let nLate = 0, nEarly = 0;
-    h += '<table><thead><tr><th class="c">#</th><th>รหัส</th><th>ชื่อ-สกุล</th><th class="c">เวลาเข้า</th><th class="c">เวลาออก</th>' +
+    h += '<table><thead><tr><th class="c nw">ลำดับ</th><th class="nw">รหัส</th><th class="nm">ชื่อ-สกุล</th><th class="c">เวลาเข้า</th><th class="c">เวลาออก</th>' +
          '<th class="c">สาย (นาที)</th><th class="c">ออกก่อน (นาที)</th><th class="c">รวมเวลาทำงาน</th><th class="c">สถานะ</th></tr></thead><tbody>' +
       rows.map((x, i) => {
         const late = Math.max(0, mins(x.timeIn) - startM);
@@ -263,7 +271,7 @@ async function loadReport() {
         if (late) nLate++; if (early) nEarly++;
         const st = [late ? '<span class="late">มาสาย</span>' : '', early ? '<span class="early">ออกก่อนเวลา</span>' : '',
                     !x.timeOut ? '<span class="muted">ยังไม่ออกงาน</span>' : '', (!late && !early && x.timeOut) ? '<span class="good">ปกติ</span>' : ''].filter(Boolean).join(' / ');
-        return '<tr><td class="c">' + (i + 1) + '</td><td>' + esc(x.userId) + '</td><td>' + esc(x.name) + '</td><td class="c">' + x.timeIn.slice(0, 5) +
+        return '<tr><td class="c">' + (i + 1) + '</td><td class="nw">' + esc(x.userId) + '</td><td class="nm">' + esc(x.name) + '</td><td class="c">' + x.timeIn.slice(0, 5) +
           '</td><td class="c">' + (x.timeOut ? x.timeOut.slice(0, 5) : '-') + '</td><td class="c ' + (late ? 'late' : '') + '">' + (late || '-') +
           '</td><td class="c ' + (early ? 'early' : '') + '">' + (early || '-') + '</td><td class="c">' + (x.timeOut ? hm(hrs(x.timeIn, x.timeOut)) : '-') +
           '</td><td class="c">' + st + '</td></tr>';
@@ -279,12 +287,12 @@ async function loadReport() {
       u.days++; if (x.status === 'สาย') u.late++; u.h += hrs(x.timeIn, x.timeOut);
     });
     const list = Object.values(by).sort((p, q) => p.id.localeCompare(q.id));
-    h += '<table><thead><tr><th class="c">#</th><th>รหัส</th><th>ชื่อ-สกุล</th><th class="c">มาทำงาน (วัน)</th><th class="c">มาสาย (ครั้ง)</th>' +
+    h += '<table><thead><tr><th class="c nw">ลำดับ</th><th class="nw">รหัส</th><th class="nm">ชื่อ-สกุล</th><th class="c">มาทำงาน (วัน)</th><th class="c">มาสาย (ครั้ง)</th>' +
          '<th class="c">ขาดงาน (วัน)</th><th class="c">รวมชั่วโมงทำงาน</th></tr></thead><tbody>' +
       list.map((u, i) => {
         const from = u.created && u.created > a ? u.created : a;
         const abs = Math.max(0, workdays(from, b, r.end) - u.days);
-        return '<tr><td class="c">' + (i + 1) + '</td><td>' + esc(u.id) + '</td><td>' + esc(u.name) + '</td><td class="c">' + u.days +
+        return '<tr><td class="c">' + (i + 1) + '</td><td class="nw">' + esc(u.id) + '</td><td class="nm">' + esc(u.name) + '</td><td class="c">' + u.days +
           '</td><td class="c ' + (u.late ? 'late' : '') + '">' + u.late + '</td><td class="c ' + (abs ? 'late' : '') + '">' + abs +
           '</td><td class="c">' + hm(u.h) + '</td></tr>';
       }).join('') + (list.length ? '' : '<tr><td colspan="7" class="c muted">ไม่มีข้อมูล</td></tr>') + '</tbody></table>' +
