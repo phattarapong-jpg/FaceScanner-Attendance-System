@@ -244,6 +244,8 @@ async function openCam() {
   try {
     if (!modelsOk) {
       $('camMsg').textContent = 'กำลังโหลดโมเดล...';
+      try { await faceapi.tf.setBackend('webgl'); await faceapi.tf.ready(); }
+      catch (e) { await faceapi.tf.setBackend('cpu'); await faceapi.tf.ready(); }
       await Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri(MODEL), faceapi.nets.faceLandmark68Net.loadFromUri(MODEL), faceapi.nets.faceRecognitionNet.loadFromUri(MODEL)]);
       modelsOk = true;
     }
