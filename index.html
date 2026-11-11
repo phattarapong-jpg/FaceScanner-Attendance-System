@@ -49,17 +49,16 @@ const MODEL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
 const TH_M = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 const $ = id => document.getElementById(id);
 let pos = null, busy = false, hits = 0, cfg = { start: '08:30', end: '16:30' };
-
 const CFG_ERR = typeof CONFIG === 'undefined' || !CONFIG.API_URL;
 if (typeof CONFIG === 'undefined') window.CONFIG = {};
-$('logo').src = CONFIG.LOGO_URL || 'https://drive.google.com/thumbnail?id=1mrJbjgs8PdZS-5jKImMdYR2Ng2w0WdLA&sz=w600';
+$('logo').src = CONFIG.LOGO_URL || 'logo.png';
 const setMsg = t => $('msg').textContent = t;
 const p2 = n => String(n).padStart(2, '0');
 
 function tick() {
   const d = new Date();
   $('clock').textContent = 'วันที่ ' + d.getDate() + ' ' + TH_M[d.getMonth()] + ' พ.ศ. ' + (d.getFullYear() + 543) +
-    '  เวลา ' + p2(d.getHours()) + ':' + p2(d.getMinutes()) + ':' + p2(d.getSeconds()) + ' น.';
+    ' เวลา ' + p2(d.getHours()) + ':' + p2(d.getMinutes()) + ':' + p2(d.getSeconds()) + ' น.';
 }
 setInterval(tick, 1000); tick();
 
@@ -89,8 +88,7 @@ async function init() {
       { enableHighAccuracy: true, maximumAge: 5000 });
     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 }, audio: false });
     $('v').srcObject = stream;
-    await $('v').play();
-    loop();
+    await $('v').play(); loop();
   } catch (e) {
     setMsg('เปิดกล้องไม่ได้: ' + e.message);
   }
@@ -122,13 +120,13 @@ async function send(descriptor) {
     if (r.type === 'IN') {
       const late = r.status === 'สาย';
       show({ ok: true, warn: late, title: r.name, id: r.id, time: r.time, note: r.note,
-             tag: late ? 'เข้างานสาย' : 'เข้างาน (ตรงเวลา)',
-             sub: late ? 'เกินเวลา ' + cfg.start + ' น.' : '' });
+        tag: late ? 'เข้างานสาย' : 'เข้างาน (ตรงเวลา)',
+        sub: late ? 'เกินเวลา ' + cfg.start + ' น.' : '' });
     } else {
       const early = r.status === 'ออกก่อนเวลา';
       show({ ok: true, warn: early, title: r.name, id: r.id, time: r.time,
-             tag: early ? 'ออกก่อนเวลา' : 'ออกงาน',
-             sub: early ? 'ก่อนเวลา ' + cfg.end + ' น.' : '' });
+        tag: early ? 'ออกก่อนเวลา' : 'ออกงาน',
+        sub: early ? 'ก่อนเวลา ' + cfg.end + ' น.' : '' });
     }
   } catch (e) { show({ ok: false, title: 'เชื่อมต่อไม่ได้', tag: e.message }); }
 }
@@ -137,7 +135,8 @@ function show(o) {
   const cls = !o.ok ? 'bad' : (o.warn ? 'warn' : 'ok');
   const icon = !o.ok ? '✖' : (o.warn ? '⚠' : '✔');
   $('res').innerHTML = '<div class="icon ' + cls + '">' + icon + '</div>' +
-    '<div class="big">' + o.title + '</div>' + (o.id ? '<div class="eid">รหัส ' + o.id + '</div>' : '') +
+    '<div class="big">' + o.title + '</div>' +
+    (o.id ? '<div class="eid">รหัส ' + o.id + '</div>' : '') +
     '<div class="tag ' + cls + '">' + (o.tag || '') + '</div>' +
     (o.time ? '<div class="tm">' + o.time + ' น.</div>' : '') +
     (o.sub ? '<div class="sub">' + o.sub + '</div>' : '') +
@@ -149,4 +148,4 @@ function show(o) {
 init();
 </script>
 </body>
-</html> 
+</html>
