@@ -2,38 +2,64 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ECT KPP FaceScanner Attendance System</title>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0f172a;--tx:#f1f5f9;--mut:#94a3b8;--ok:#22c55e;--bad:#ef4444;--warn:#f59e0b;--ac:#38bdf8}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:var(--bg);color:var(--tx);font-family:'Sarabun',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;padding:16px}
-.logo{height:72px;width:auto;margin-bottom:6px}
-h1{font-size:1.2rem;margin:2px 0;text-align:center}
-.clock{color:var(--ac);font-size:.95rem;margin:2px 0 12px;text-align:center}
-.cam{position:relative;width:100%;max-width:420px;aspect-ratio:3/4;background:#000;border-radius:20px;overflow:hidden;border:3px solid var(--ac)}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;min-height:100dvh;background:var(--bg);color:var(--tx);font-family:'Sarabun',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;padding:16px;padding-bottom:max(16px,env(safe-area-inset-bottom))}
+.logo{height:72px;max-width:80%;width:auto;object-fit:contain;margin-bottom:6px}
+h1{font-size:clamp(1rem,4.6vw,1.3rem);margin:2px 0;text-align:center}
+.clock{color:var(--ac);font-size:clamp(.8rem,3.4vw,.95rem);margin:2px 0 10px;text-align:center}
+
+/* แจ้งเตือนพื้นที่ทำงาน */
+.zone{width:100%;max-width:420px;padding:10px 14px;margin-bottom:10px;border-radius:12px;border:1px solid transparent;font-weight:600;font-size:clamp(.85rem,3.6vw,1rem);text-align:center;line-height:1.4}
+.zone small{display:block;font-weight:400;opacity:.85}
+.zone.wait{background:#1e293b;color:var(--mut);border-color:#334155}
+.zone.in{background:rgba(34,197,94,.15);color:var(--ok);border-color:var(--ok)}
+.zone.out{background:rgba(239,68,68,.15);color:var(--bad);border-color:var(--bad)}
+.zone.err{background:rgba(245,158,11,.15);color:var(--warn);border-color:var(--warn)}
+
+.cam{position:relative;width:100%;max-width:420px;aspect-ratio:3/4;max-height:60vh;max-height:calc(100dvh - 300px);min-height:220px;background:#000;border-radius:20px;overflow:hidden;border:3px solid var(--ac)}
+.cam.out{border-color:var(--bad)}
+.cam.in{border-color:var(--ok)}
 .cam video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
 .ring{position:absolute;inset:12% 14%;border:3px dashed rgba(255,255,255,.55);border-radius:50%;pointer-events:none}
-.msg{margin-top:14px;font-size:1.1rem;text-align:center;min-height:1.6em}
-.gps{margin-top:6px;font-size:.85rem;color:var(--mut)}
-.result{display:none;position:absolute;inset:0;background:rgba(15,23,42,.94);flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
+.msg{margin-top:12px;font-size:clamp(.95rem,4vw,1.1rem);text-align:center;min-height:1.6em;max-width:420px}
+.gps{margin-top:6px;font-size:.85rem;color:var(--mut);text-align:center}
+.result{display:none;position:absolute;inset:0;background:rgba(15,23,42,.94);flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:16px;overflow:auto}
 .result.show{display:flex}
-.result .icon{font-size:3.4rem}
-.result .big{font-size:1.6rem;font-weight:700;margin:6px 0}
+.result .icon{font-size:clamp(2.4rem,12vw,3.4rem)}
+.result .big{font-size:clamp(1.2rem,6vw,1.6rem);font-weight:700;margin:6px 0}
 .result .eid{color:var(--mut);font-size:.9rem}
-.result .tag{font-size:1.5rem;font-weight:700;margin:8px 0}
-.result .tm{font-size:2.2rem;font-weight:700}
+.result .tag{font-size:clamp(1.1rem,5.5vw,1.5rem);font-weight:700;margin:8px 0}
+.result .tm{font-size:clamp(1.6rem,8vw,2.2rem);font-weight:700}
+.result .zn{margin-top:10px;font-size:.95rem;font-weight:600}
 .ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
 .sub{color:var(--mut);font-size:.9rem}
 a.admin{margin-top:18px;color:var(--mut);font-size:.85rem}
+a:focus-visible{outline:2px solid var(--ac);outline-offset:3px}
+
+/* จอแนวนอนที่เตี้ย (มือถือหมุนจอ): วางกล้องกับสถานะเคียงกัน */
+@media (orientation:landscape) and (max-height:520px){
+  body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-content:start;gap:0 16px;align-items:start;justify-items:center}
+  .logo,h1,.clock,.zone,.msg,.gps,a.admin{grid-column:1}
+  .cam{grid-column:2;grid-row:1 / span 7;max-height:calc(100dvh - 32px);aspect-ratio:4/3;max-width:100%}
+  .logo{height:48px}
+}
+@media (min-width:900px){
+  .cam,.zone,.msg{max-width:520px}
+}
 </style>
 </head>
 <body>
 <img class="logo" id="logo" alt="" onerror="this.style.display='none'">
 <h1 id="org">ECT KPP FaceScanner Attendance System</h1>
 <div class="clock" id="clock"></div>
-<div class="cam">
+<div class="zone wait" id="zone" role="status" aria-live="polite">กำลังตรวจสอบตำแหน่ง...</div>
+<div class="cam" id="cam">
   <video id="v" playsinline muted></video>
   <div class="ring"></div>
   <div class="result" id="res"></div>
@@ -48,12 +74,15 @@ a.admin{margin-top:18px;color:var(--mut);font-size:.85rem}
 const MODEL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
 const TH_M = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 const $ = id => document.getElementById(id);
-let pos = null, busy = false, hits = 0, cfg = { start: '08:30', end: '16:30' };
+let pos = null, busy = false, hits = 0;
+let cfg = { start: '08:30', end: '16:30', lat: null, lng: null, radius: null };
+let zone = null; // { in: true/false, dist: เมตร } หรือ null ถ้ายังประเมินไม่ได้
 const CFG_ERR = typeof CONFIG === 'undefined' || !CONFIG.API_URL;
 if (typeof CONFIG === 'undefined') window.CONFIG = {};
 $('logo').src = CONFIG.LOGO_URL || 'https://drive.google.com/thumbnail?id=1mrJbjgs8PdZS-5jKImMdYR2Ng2w0WdLA&sz=w600';
 const setMsg = t => $('msg').textContent = t;
 const p2 = n => String(n).padStart(2, '0');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 function tick() {
   const d = new Date();
@@ -62,30 +91,59 @@ function tick() {
 }
 setInterval(tick, 1000); tick();
 
+/* ---------- พื้นที่ทำงาน (ใช้ละติจูด/ลองจิจูดที่ตั้งค่าไว้) ---------- */
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371000, r = Math.PI / 180;
+  const dLat = (lat2 - lat1) * r, dLon = (lon2 - lon1) * r;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+function setZone(cls, html) {
+  $('zone').className = 'zone ' + cls;
+  $('zone').innerHTML = html;
+  $('cam').className = 'cam' + (cls === 'in' || cls === 'out' ? ' ' + cls : '');
+}
+function updateZone() {
+  const hasCfg = isFinite(cfg.lat) && isFinite(cfg.lng) && isFinite(cfg.radius) && cfg.lat !== null;
+  if (!pos) { zone = null; return setZone('err', '📍 ยังไม่ได้ตำแหน่ง GPS<small>กรุณาเปิด GPS และอนุญาตการเข้าถึงตำแหน่ง</small>'); }
+  if (!hasCfg) { zone = null; return setZone('wait', 'กำลังตรวจสอบพื้นที่ทำงาน...'); }
+  const d = Math.round(haversine(pos.latitude, pos.longitude, cfg.lat, cfg.lng));
+  const inside = d <= cfg.radius, was = zone;
+  zone = { in: inside, dist: d };
+  if (inside) setZone('in', '✅ อยู่ในพื้นที่ทำงาน<small>ห่างจุดทำงาน ' + d + ' ม. (อนุญาตไม่เกิน ' + cfg.radius + ' ม.)</small>');
+  else setZone('out', '⚠ อยู่นอกพื้นที่ทำงาน<small>ห่างจุดทำงาน ' + d + ' ม. (อนุญาตไม่เกิน ' + cfg.radius + ' ม.) ไม่สามารถลงเวลาได้</small>');
+  if (was && was.in !== inside && navigator.vibrate) navigator.vibrate(inside ? 80 : [120, 60, 120]);
+}
+
 async function initTf() {
   try { await faceapi.tf.setBackend('webgl'); await faceapi.tf.ready(); }
   catch (e) { await faceapi.tf.setBackend('cpu'); await faceapi.tf.ready(); }
 }
-
+function startGps() {
+  if (!navigator.geolocation) { $('gps').textContent = 'อุปกรณ์นี้ไม่รองรับ GPS'; return updateZone(); }
+  navigator.geolocation.watchPosition(
+    p => { pos = p.coords; $('gps').textContent = 'GPS พร้อมใช้งาน (±' + Math.round(p.coords.accuracy) + ' ม.)'; updateZone(); },
+    () => { pos = null; $('gps').textContent = 'GPS: กรุณาอนุญาตการเข้าถึงตำแหน่ง'; updateZone(); },
+    { enableHighAccuracy: true, maximumAge: 5000 });
+}
 async function init() {
   if (CFG_ERR) return setMsg('อ่านไฟล์ config.js ไม่ได้ กรุณาตรวจว่าไฟล์ชื่อ config.js (ตัวพิมพ์เล็ก) อยู่โฟลเดอร์เดียวกับหน้านี้ และมีเครื่องหมาย , คั่นระหว่างบรรทัด');
   try {
-    await initTf();
+    startGps();
     fetch(CONFIG.API_URL).then(r => r.json()).then(c => {
       if (c.org) $('org').textContent = c.org;
       if (c.start) cfg.start = c.start;
       if (c.end) cfg.end = c.end;
+      cfg.lat = Number(c.lat); cfg.lng = Number(c.lng); cfg.radius = Number(c.radius);
+      updateZone();
     }).catch(() => {});
+    await initTf();
     setMsg('กำลังโหลดโมเดลจดจำใบหน้า...');
     await Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri(MODEL),
       faceapi.nets.faceLandmark68Net.loadFromUri(MODEL),
       faceapi.nets.faceRecognitionNet.loadFromUri(MODEL)
     ]);
-    navigator.geolocation.watchPosition(
-      p => { pos = p.coords; $('gps').textContent = 'GPS พร้อมใช้งาน (±' + Math.round(p.coords.accuracy) + ' ม.)'; },
-      () => { pos = null; $('gps').textContent = 'GPS: กรุณาอนุญาตการเข้าถึงตำแหน่ง'; },
-      { enableHighAccuracy: true, maximumAge: 5000 });
     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 }, audio: false });
     $('v').srcObject = stream;
     await $('v').play(); loop();
@@ -93,23 +151,26 @@ async function init() {
     setMsg('เปิดกล้องไม่ได้: ' + e.message);
   }
 }
-
 async function loop() {
   if (!busy) {
-    const det = await faceapi
-      .detectSingleFace($('v'), new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.6 }))
-      .withFaceLandmarks().withFaceDescriptor();
-    if (det) {
-      hits++;
-      setMsg('ตรวจพบใบหน้า กรุณาอยู่นิ่งสักครู่...');
-      if (hits >= 3) { busy = true; hits = 0; await send(Array.from(det.descriptor)); }
-    } else { hits = 0; setMsg('กรุณามองกล้อง'); }
+    if (zone && !zone.in) {
+      hits = 0; setMsg('อยู่นอกพื้นที่ทำงาน ไม่สามารถลงเวลาได้');
+    } else {
+      const det = await faceapi
+        .detectSingleFace($('v'), new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.6 }))
+        .withFaceLandmarks().withFaceDescriptor();
+      if (det) {
+        hits++;
+        setMsg('ตรวจพบใบหน้า กรุณาอยู่นิ่งสักครู่...');
+        if (hits >= 3) { busy = true; hits = 0; await send(Array.from(det.descriptor)); }
+      } else { hits = 0; setMsg('กรุณามองกล้อง'); }
+    }
   }
   setTimeout(loop, 400);
 }
-
 async function send(descriptor) {
   if (!pos) return show({ ok: false, title: 'ยังไม่ได้ตำแหน่ง GPS', tag: 'กรุณาเปิด GPS แล้วลองใหม่' });
+  if (zone && !zone.in) return show({ ok: false, title: 'อยู่นอกพื้นที่ทำงาน', tag: 'ห่างจุดทำงาน ' + zone.dist + ' ม.' });
   setMsg('กำลังตรวจสอบ...');
   try {
     const r = await fetch(CONFIG.API_URL, {
@@ -117,30 +178,32 @@ async function send(descriptor) {
       body: JSON.stringify({ action: 'scan', descriptor, lat: pos.latitude, lng: pos.longitude })
     }).then(r => r.json());
     if (!r.ok) return show({ ok: false, title: 'ไม่สำเร็จ', tag: r.error });
+    const d = r.dist != null ? r.dist : (zone ? zone.dist : null);
+    const zn = d != null ? '📍 อยู่ในพื้นที่ทำงาน (ห่างจุดทำงาน ' + d + ' ม.)' : '';
     if (r.type === 'IN') {
       const late = r.status === 'สาย';
-      show({ ok: true, warn: late, title: r.name, id: r.id, time: r.time, note: r.note,
+      show({ ok: true, warn: late, title: r.name, id: r.id, time: r.time, note: r.note, zn: zn,
         tag: late ? 'เข้างานสาย' : 'เข้างาน (ตรงเวลา)',
         sub: late ? 'เกินเวลา ' + cfg.start + ' น.' : '' });
     } else {
       const early = r.status === 'ออกก่อนเวลา';
-      show({ ok: true, warn: early, title: r.name, id: r.id, time: r.time,
+      show({ ok: true, warn: early, title: r.name, id: r.id, time: r.time, zn: zn,
         tag: early ? 'ออกก่อนเวลา' : 'ออกงาน',
         sub: early ? 'ก่อนเวลา ' + cfg.end + ' น.' : '' });
     }
   } catch (e) { show({ ok: false, title: 'เชื่อมต่อไม่ได้', tag: e.message }); }
 }
-
 function show(o) {
   const cls = !o.ok ? 'bad' : (o.warn ? 'warn' : 'ok');
   const icon = !o.ok ? '✖' : (o.warn ? '⚠' : '✔');
   $('res').innerHTML = '<div class="icon ' + cls + '">' + icon + '</div>' +
-    '<div class="big">' + o.title + '</div>' +
-    (o.id ? '<div class="eid">รหัส ' + o.id + '</div>' : '') +
-    '<div class="tag ' + cls + '">' + (o.tag || '') + '</div>' +
-    (o.time ? '<div class="tm">' + o.time + ' น.</div>' : '') +
-    (o.sub ? '<div class="sub">' + o.sub + '</div>' : '') +
-    (o.note ? '<div class="sub">' + o.note + '</div>' : '');
+    '<div class="big">' + esc(o.title) + '</div>' +
+    (o.id ? '<div class="eid">รหัส ' + esc(o.id) + '</div>' : '') +
+    '<div class="tag ' + cls + '">' + esc(o.tag || '') + '</div>' +
+    (o.time ? '<div class="tm">' + esc(o.time) + ' น.</div>' : '') +
+    (o.zn ? '<div class="zn ok">' + esc(o.zn) + '</div>' : '') +
+    (o.sub ? '<div class="sub">' + esc(o.sub) + '</div>' : '') +
+    (o.note ? '<div class="sub">' + esc(o.note) + '</div>' : '');
   $('res').classList.add('show');
   setTimeout(() => { $('res').classList.remove('show'); busy = false; hits = 0; }, 4500);
 }
