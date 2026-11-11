@@ -8,16 +8,16 @@
 <style>
 :root{--bg:#0f172a;--tx:#f1f5f9;--mut:#94a3b8;--ok:#22c55e;--bad:#ef4444;--warn:#f59e0b;--ac:#38bdf8}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:var(--bg);color:var(--tx);font-family:'Sarabun',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;padding:16px}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--tx);font-family:'Sarabun',system-ui,sans-serif;display:flex;flexdirection:column;align-items:center;padding:16px}
 .logo{height:72px;width:auto;margin-bottom:6px}
 h1{font-size:1.2rem;margin:2px 0;text-align:center}
 .clock{color:var(--ac);font-size:.95rem;margin:2px 0 12px;text-align:center}
-.cam{position:relative;width:100%;max-width:420px;aspect-ratio:3/4;background:#000;border-radius:20px;overflow:hidden;border:3px solid var(--ac)}
+.cam{position:relative;width:100%;max-width:420px;aspect-ratio:3/4;background:#000;borderradius:20px;overflow:hidden;border:3px solid var(--ac)}
 .cam video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
 .ring{position:absolute;inset:12% 14%;border:3px dashed rgba(255,255,255,.55);border-radius:50%;pointer-events:none}
-.msg{margin-top:14px;font-size:1.1rem;text-align:center;min-height:1.6em;white-space:pre-line}
+.msg{margin-top:14px;font-size:1.1rem;text-align:center;min-height:1.6em}
 .gps{margin-top:6px;font-size:.85rem;color:var(--mut)}
-.result{display:none;position:absolute;inset:0;background:rgba(15,23,42,.94);flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
+.result{display:none;position:absolute;inset:0;background:rgba(15,23,42,.94);flex-direction:column;align-items:center;justifycontent:center;text-align:center;padding:20px}
 .result.show{display:flex}
 .result .icon{font-size:3.4rem}
 .result .big{font-size:1.6rem;font-weight:700;margin:6px 0}
@@ -34,115 +34,125 @@ a.admin{margin-top:18px;color:var(--mut);font-size:.85rem}
 <h1 id="org">ECT KPP FaceScanner Attendance System</h1>
 <div class="clock" id="clock"></div>
 <div class="cam">
-  <video id="v" playsinline muted></video>
-  <div class="ring"></div>
-  <div class="result" id="res"></div>
+ <video id="v" playsinline muted></video>
+ <div class="ring"></div>
+ <div class="result" id="res"></div>
 </div>
 <div class="msg" id="msg">กำลังเริ่มต้น...</div>
 <div class="gps" id="gps">GPS: รอตำแหน่ง...</div>
-<div class="gps" id="srv">เซิร์ฟเวอร์: กำลังตรวจสอบ...</div>
-
+<a class="admin" href="admin.html">สำหรับผู้ดูแลระบบ</a>
 <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
 <script src="config.js"></script>
-<script src="common.js"></script>
 <script>
 const MODEL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
-const TH_M = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const TH_M = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','
+ตุลาคม','พฤศจิกายน','ธันวาคม'];
 const $ = id => document.getElementById(id);
 let pos = null, busy = false, hits = 0, cfg = { start: '08:30', end: '16:30' };
-$('logo').src = FS.logo();
+const CFG_ERR = typeof CONFIG === 'undefined' || !CONFIG.API_URL;
+if (typeof CONFIG === 'undefined') window.CONFIG = {};
+$('logo').src = CONFIG.LOGO_URL || 'https://drive.google.com/thumbnail?id=1mrJbjgs8PdZS5jKImMdYR2Ng2w0WdLA&sz=w600';
 const setMsg = t => $('msg').textContent = t;
 const p2 = n => String(n).padStart(2, '0');
-
 function tick() {
-  const d = new Date();
-  $('clock').textContent = 'วันที่ ' + d.getDate() + ' ' + TH_M[d.getMonth()] + ' พ.ศ. ' + (d.getFullYear() + 543) +
-    ' เวลา ' + p2(d.getHours()) + ':' + p2(d.getMinutes()) + ':' + p2(d.getSeconds()) + ' น.';
+ const d = new Date();
+ $('clock').textContent = 'วันที่ ' + d.getDate() + ' ' + TH_M[d.getMonth()] + ' พ.ศ. ' + (d.getFullYear() + 543) +
+ ' เวลา ' + p2(d.getHours()) + ':' + p2(d.getMinutes()) + ':' + p2(d.getSeconds()) + ' น.';
 }
 setInterval(tick, 1000); tick();
-
 async function initTf() {
-  try { await faceapi.tf.setBackend('webgl'); await faceapi.tf.ready(); }
-  catch (e) { await faceapi.tf.setBackend('cpu'); await faceapi.tf.ready(); }
+ try { await faceapi.tf.setBackend('webgl'); await faceapi.tf.ready(); }
+ catch (e) { await faceapi.tf.setBackend('cpu'); await faceapi.tf.ready(); }
 }
-
 async function init() {
-  try {
-    await initTf();
-    FS.ping().then(c => {
-      if (!c.ok) { $('srv').textContent = 'เซิร์ฟเวอร์: เชื่อมต่อไม่ได้ - ' + c.error.split('\n')[0]; $('srv').style.color = '#ef4444'; return; }
-      $('srv').textContent = 'เซิร์ฟเวอร์: เชื่อมต่อแล้ว'; $('srv').style.color = '#22c55e';
-      if (c.org) $('org').textContent = c.org;
-      if (c.start) cfg.start = c.start;
-      if (c.end) cfg.end = c.end;
-    });
-    setMsg('กำลังโหลดโมเดลจดจำใบหน้า...');
-    await Promise.all([
-      faceapi.nets.tinyFaceDetector.loadFromUri(MODEL),
-      faceapi.nets.faceLandmark68Net.loadFromUri(MODEL),
-      faceapi.nets.faceRecognitionNet.loadFromUri(MODEL)
-    ]);
-    navigator.geolocation.watchPosition(
-      p => { pos = p.coords; $('gps').textContent = 'GPS พร้อมใช้งาน (±' + Math.round(p.coords.accuracy) + ' ม.)'; },
-      () => { pos = null; $('gps').textContent = 'GPS: กรุณาอนุญาตการเข้าถึงตำแหน่ง'; },
-      { enableHighAccuracy: true, maximumAge: 5000 });
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 }, audio: false });
-    $('v').srcObject = stream;
-    await $('v').play(); loop();
-  } catch (e) {
-    setMsg('เปิดกล้องไม่ได้: ' + e.message);
-  }
+ if (CFG_ERR) return setMsg('อ่านไฟล์ config.js ไม่ได้ กรุณาตรวจว่าไฟล์ชื่อ config.js (ตัวพิมพ์เล็ก) อยู่โฟลเดอร์เดียวกับ
+หน้านี้ และมีเครื่องหมาย , คั่นระหว่างบรรทัด');
+ try {
+ await initTf();
+ fetch(CONFIG.API_URL).then(r => r.json()).then(c => {
+ if (c.org) $('org').textContent = c.org;
+ if (c.start) cfg.start = c.start;
+ if (c.end) cfg.end = c.end;
+ }).catch(() => {});
+ setMsg('กำลังโหลดโมเดลจดจำใบหน้า...');
+ await Promise.all([
+ faceapi.nets.tinyFaceDetector.loadFromUri(MODEL),
+ faceapi.nets.faceLandmark68Net.loadFromUri(MODEL),
+ faceapi.nets.faceRecognitionNet.loadFromUri(MODEL)
+ ]);
+ navigator.geolocation.watchPosition(
+ p => { pos = p.coords; $('gps').textContent = 'GPS พร้อมใช้งาน (±' + Math.round(p.coords.accuracy) + ' ม.)'; },
+ () => { pos = null; $('gps').textContent = 'GPS: กรุณาอนุญาตการเข้าถึงตำแหน่ง'; },
+ { enableHighAccuracy: true, maximumAge: 5000 });
+ const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 }, audio:
+false });
+ $('v').srcObject = stream;
+ await $('v').play();
+ loop();
+ } catch (e) {
+ setMsg('เปิดกล้องไม่ได้: ' + e.message);
+ }
 }
-
 async function loop() {
-  if (!busy) {
-    const det = await faceapi
-      .detectSingleFace($('v'), new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.6 }))
-      .withFaceLandmarks().withFaceDescriptor();
-    if (det) {
-      hits++;
-      setMsg('ตรวจพบใบหน้า กรุณาอยู่นิ่งสักครู่...');
-      if (hits >= 3) { busy = true; hits = 0; await send(Array.from(det.descriptor)); }
-    } else { hits = 0; setMsg('กรุณามองกล้อง'); }
-  }
-  setTimeout(loop, 400);
+ if (!busy) {
+ const det = await faceapi
+ .detectSingleFace($('v'), new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.6 }))
+ .withFaceLandmarks().withFaceDescriptor();
+ if (det) {
+ hits++;
+ setMsg('ตรวจพบใบหน้า กรุณาอยู่นิ่งสักครู่...');
+ if (hits >= 3) { busy = true; hits = 0; await send(Array.from(det.descriptor)); }
+ } else { hits = 0; setMsg('กรุณามองกล้อง'); }
+ }
+ setTimeout(loop, 400);
 }
-
 async function send(descriptor) {
-  if (!pos) return show({ ok: false, title: 'ยังไม่ได้ตำแหน่ง GPS', tag: 'กรุณาเปิด GPS แล้วลองใหม่' });
-  setMsg('กำลังตรวจสอบ...');
-  try {
-    const r = await FS.post('scan', { descriptor, lat: pos.latitude, lng: pos.longitude });
-    if (!r.ok) return show({ ok: false, title: 'ไม่สำเร็จ', tag: r.error });
-    if (r.type === 'IN') {
-      const late = r.status === 'สาย';
-      show({ ok: true, warn: late, title: r.name, id: r.id, time: r.time, note: r.note,
-        tag: late ? 'เข้างานสาย' : 'เข้างาน (ตรงเวลา)',
-        sub: late ? 'เกินเวลา ' + cfg.start + ' น.' : '' });
-    } else {
-      const early = r.status === 'ออกก่อนเวลา';
-      show({ ok: true, warn: early, title: r.name, id: r.id, time: r.time,
-        tag: early ? 'ออกก่อนเวลา' : 'ออกงาน',
-        sub: early ? 'ก่อนเวลา ' + cfg.end + ' น.' : '' });
-    }
-  } catch (e) { show({ ok: false, title: 'เชื่อมต่อไม่ได้', tag: e.message.split('\n')[0], sub: e.message.split('\n').slice(1).join(' / ') }); }
+ if (!pos) return show({ ok: false, title: 'ยังไม่ได้ตำแหน่ง GPS', tag: 'กรุณาเปิด GPS แล้วลองใหม่' });
+ setMsg('กำลังตรวจสอบ...');
+ try {
+ const r = await fetch(CONFIG.API_URL, {
+ method: 'POST',
+ body: JSON.stringify({ action: 'scan', descriptor, lat: pos.latitude, lng: pos.longitude })
+ }).then(r => r.json());
+ if (!r.ok) return show({ ok: false, title: 'ไม่สำเร็จ', tag: r.error });
+ if (r.type === 'IN') {
+ const late = r.status === 'สาย';
+ show({ ok: true, warn: late, title: r.name, id: r.id, time: r.time, note: r.note,
+ tag: late ? 'เข้างานสาย' : 'เข้างาน (ตรงเวลา)',
+ sub: late ? 'เกินเวลา ' + cfg.start + ' น.' : '' });
+ } else {
+ const early = r.status === 'ออกก่อนเวลา';
+ show({ ok: true, warn: early, title: r.name, id: r.id, time: r.time,
+ tag: early ? 'ออกก่อนเวลา' : 'ออกงาน',
+ sub: early ? 'ก่อนเวลา ' + cfg.end + ' น.' : '' });
+ }
+ } catch (e) { show({ ok: false, title: 'เชื่อมต่อไม่ได้', tag: e.message }); }
 }
-
 function show(o) {
-  const cls = !o.ok ? 'bad' : (o.warn ? 'warn' : 'ok');
-  const icon = !o.ok ? '✖' : (o.warn ? '⚠' : '✔');
-  $('res').innerHTML = '<div class="icon ' + cls + '">' + icon + '</div>' +
-    '<div class="big">' + o.title + '</div>' +
-    (o.id ? '<div class="eid">รหัส ' + o.id + '</div>' : '') +
-    '<div class="tag ' + cls + '">' + (o.tag || '') + '</div>' +
-    (o.time ? '<div class="tm">' + o.time + ' น.</div>' : '') +
-    (o.sub ? '<div class="sub">' + o.sub + '</div>' : '') +
-    (o.note ? '<div class="sub">' + o.note + '</div>' : '');
-  $('res').classList.add('show');
-  setTimeout(() => { $('res').classList.remove('show'); busy = false; hits = 0; }, 4500);
+ const cls = !o.ok ? 'bad' : (o.warn ? 'warn' : 'ok');
+ const icon = !o.ok ? '✖' : (o.warn ? '⚠' : '✔');
+ $('res').innerHTML = '<div class="icon ' + cls + '">' + icon + '</div>' +
+ '<div class="big">' + o.title + '</div>' + (o.id ? '<div class="eid">รหัส ' + o.id + '</div>' : '') +
+ '<div class="tag ' + cls + '">' + (o.tag || '') + '</div>' +
+ (o.time ? '<div class="tm">' + o.time + ' น.</div>' : '') +
+ (o.sub ? '<div class="sub">' + o.sub + '</div>' : '') +
+ (o.note ? '<div class="sub">' + o.note + '</div>' : '');
+ $('res').classList.add('show');
+ setTimeout(() => { $('res').classList.remove('show'); busy = false; hits = 0; }, 4500);
 }
-
 init();
 </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ผู้ดูแลระบบ ECT KPP FaceScanner Attendance System</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1f5f9;--card:#fff;--tx:#0f172a;--mut:#64748b;--ac:#2563eb;--bd:#e2e8f0;--ok:#16a34a;--bad:#dc2626;--
+warn:#d97706}
+*{box-sizing:border-box}
+body{margin:0;background:var(-
