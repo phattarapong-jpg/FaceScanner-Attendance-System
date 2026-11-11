@@ -3,511 +3,156 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ผู้ดูแลระบบ ECT KPP FaceScanner Attendance System</title>
+<title>ECT KPP FaceScanner Attendance System</title>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f1f5f9;--card:#fff;--tx:#0f172a;--mut:#64748b;--ac:#2563eb;--bd:#e2e8f0;--ok:#16a34a;--bad:#dc2626;--warn:#d97706}
+:root{--bg:#0f172a;--tx:#f1f5f9;--mut:#94a3b8;--ok:#22c55e;--bad:#ef4444;--warn:#f59e0b;--ac:#38bdf8}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font-family:'Sarabun',system-ui,sans-serif}
-header{background:var(--ac);color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
-header .brand{display:flex;align-items:center;gap:10px}
-header h1{margin:0;font-size:1.05rem}
-header .logo{height:40px;background:#fff;border-radius:8px;padding:2px}
-main{max-width:1050px;margin:0 auto;padding:16px}
-.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:16px}
-.tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
-.tabs button{padding:8px 16px;border:1px solid var(--bd);background:#fff;border-radius:999px;font:inherit;cursor:pointer}
-.tabs button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
-input,select,button{font:inherit}
-input,select{padding:8px 10px;border:1px solid var(--bd);border-radius:8px;width:100%;background:#fff}
-input[readonly]{background:#f1f5f9;font-weight:700;color:var(--ac)}
-label{display:block;font-size:.85rem;color:var(--mut);margin:8px 0 2px}
-.btn{padding:8px 16px;border:0;border-radius:8px;background:var(--ac);color:#fff;cursor:pointer}
-.btn.sec{background:#e2e8f0;color:var(--tx)}.btn.red{background:var(--bad)}.btn.sm{padding:4px 10px;font-size:.85rem}
-.row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
-.row>div{flex:1;min-width:120px}
-.dsel{display:flex;gap:6px}
-table{width:100%;border-collapse:collapse;font-size:.92rem}
-th,td{border:1px solid var(--bd);padding:6px 8px;text-align:left}
-th{background:#f8fafc}
-td.c,th.c{text-align:center}
-.late{color:var(--bad);font-weight:600}.early{color:var(--warn);font-weight:600}.good{color:var(--ok)}
-.hide{display:none}
-.login{max-width:340px;margin:12vh auto;text-align:center}
-.login .logo{height:80px;margin-bottom:8px}
-.login label,.login input{text-align:left}
-.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-video{width:100%;max-width:320px;border-radius:12px;background:#000;transform:scaleX(-1)}
-.muted{color:var(--mut);font-size:.85rem}
-.rep-head{text-align:center;margin-bottom:12px}
-.rep-head .logo{height:80px;margin-bottom:4px}
-.rep-head h2{margin:0;font-size:1.3rem}.rep-head h3{margin:4px 0;font-size:1.1rem}.rep-head p{margin:0}
-.nw{white-space:nowrap}
-.ord{width:1%;white-space:nowrap}
-.nm{width:1%;white-space:nowrap}
-th.nm{text-align:center}
-.lv-in{padding:4px 6px;font-size:.9rem}
-.onlyprint{display:none}
-.tag-leave{display:inline-block;padding:1px 8px;border-radius:999px;font-size:.85rem;background:#e0e7ff;color:#3730a3}
-@font-face{font-family:'THSarabunRep';font-weight:400;src:local('TH Sarabun New'),local('THSarabunNew'),local('TH SarabunPSK'),local('THSarabunPSK'),url('fonts/THSarabunNew.ttf')}
-@font-face{font-family:'THSarabunRep';font-weight:700;src:local('TH Sarabun New Bold'),local('THSarabunNew-Bold'),local('TH SarabunPSK Bold'),local('THSarabunPSK-Bold'),url('fonts/THSarabunNew-Bold.ttf')}
-#reportOut,#reportOut table,#reportOut p{font-family:'THSarabunRep','TH Sarabun New','TH SarabunPSK','Sarabun',sans-serif;font-size:16pt;font-weight:400}
-#reportOut .muted,#reportOut .good,#reportOut .late,#reportOut .early{font-size:inherit}
-#reportOut .good,#reportOut .late,#reportOut .early{font-weight:400}
-#reportOut th{font-size:18pt;font-weight:700}
-#reportOut .lv-in{font-size:14pt}
-#reportOut .rep-head h2,#reportOut .rep-head h3,#reportOut .rep-head p.hd{font-family:inherit;font-size:18pt;font-weight:700;margin:2px 0}
-.sign{display:none;justify-content:space-around;margin-top:56px;text-align:center}
-@media print{
-  body{background:#fff}
-  header,.tabs,.noprint,#tab-users,#tab-leave,#tab-set{display:none!important}
-  main{padding:0;max-width:none}
-  .card{border:0;padding:0;margin:0}
-  .sign{display:flex}
-  .onlyprint{display:inline}
-  th{background:#eee!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  @page{size:A4;margin:14mm}
-}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--tx);font-family:'Sarabun',system-ui,sans-serif;display:flex;flexdirection:column;align-items:center;padding:16px}
+.logo{height:72px;width:auto;margin-bottom:6px}
+h1{font-size:1.2rem;margin:2px 0;text-align:center}
+.clock{color:var(--ac);font-size:.95rem;margin:2px 0 12px;text-align:center}
+.cam{position:relative;width:100%;max-width:420px;aspect-ratio:3/4;background:#000;borderradius:20px;overflow:hidden;border:3px solid var(--ac)}
+.cam video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.ring{position:absolute;inset:12% 14%;border:3px dashed rgba(255,255,255,.55);border-radius:50%;pointer-events:none}
+.msg{margin-top:14px;font-size:1.1rem;text-align:center;min-height:1.6em}
+.gps{margin-top:6px;font-size:.85rem;color:var(--mut)}
+.result{display:none;position:absolute;inset:0;background:rgba(15,23,42,.94);flex-direction:column;align-items:center;justifycontent:center;text-align:center;padding:20px}
+.result.show{display:flex}
+.result .icon{font-size:3.4rem}
+.result .big{font-size:1.6rem;font-weight:700;margin:6px 0}
+.result .eid{color:var(--mut);font-size:.9rem}
+.result .tag{font-size:1.5rem;font-weight:700;margin:8px 0}
+.result .tm{font-size:2.2rem;font-weight:700}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+.sub{color:var(--mut);font-size:.9rem}
+a.admin{margin-top:18px;color:var(--mut);font-size:.85rem}
 </style>
 </head>
 <body>
-
-<div id="loginBox" class="card login">
-  <img class="logo" alt="" onerror="this.style.display='none'"><br>
-  <h2 style="margin:0 0 8px">ผู้ดูแลระบบ</h2>
-  <h2 style="margin:0 0 6px">ECT KPP FaceScanner Attendance System</h2>
-  <label>PIN</label>
-  <input id="pin" type="password" inputmode="numeric" autocomplete="off" onkeydown="if(event.key==='Enter')login()">
-  <p id="loginErr" style="color:var(--bad);min-height:1.4em;white-space:pre-line;text-align:left;font-size:.9rem"></p>
-  <button class="btn" style="width:100%" onclick="login()">เข้าสู่ระบบ</button>
-  <p class="muted"><a href="index.html">กลับหน้าสแกนใบหน้า</a></p>
-  <p class="muted"><a href="#" onclick="testConn();return false">ทดสอบการเชื่อมต่อ</a> | <a href="#" onclick="FS.setUrl();return false">ตั้งค่าลิงก์ API</a></p>
+<img class="logo" id="logo" alt="" onerror="this.style.display='none'">
+<h1 id="org">ECT KPP FaceScanner Attendance System</h1>
+<div class="clock" id="clock"></div>
+<div class="cam">
+ <video id="v" playsinline muted></video>
+ <div class="ring"></div>
+ <div class="result" id="res"></div>
 </div>
-
-<div id="app" class="hide">
-<header>
-  <div class="brand"><img class="logo" alt="" onerror="this.style.display='none'"><h1 id="hOrg">ระบบลงเวลาเข้า-ออกงาน</h1></div>
-  <div style="text-align:right"><div class="muted" style="color:#dbeafe" id="todayTh"></div>
-    <button class="btn sec sm" onclick="logout()">ออกจากระบบ</button></div>
-</header>
-<main>
-  <div class="tabs noprint">
-    <button class="on" data-t="rep">รายงาน</button>
-    <button data-t="users">พนักงาน / ลงทะเบียนใบหน้า</button>
-    <button data-t="leave">บันทึกการลา</button>
-    <button data-t="set">ตั้งค่า</button>
-  </div>
-
-  <!-- รายงาน -->
-  <section id="tab-rep">
-    <div class="card noprint">
-      <div class="row">
-        <div style="max-width:170px"><label>ประเภทรายงาน</label>
-          <select id="rtype" onchange="typeChanged()"><option value="daily">รายวัน</option><option value="weekly">รายสัปดาห์</option><option value="monthly">รายเดือน</option></select></div>
-        <div id="modeBox" style="max-width:150px"><label>รูปแบบรายงาน</label>
-          <select id="rmode"><option value="full">แบบเต็ม</option><option value="short">แบบย่อ</option></select></div>
-        <div style="flex:2;min-width:300px"><label id="dlabel">เลือกวันที่</label>
-          <div class="dsel"><select id="dd"></select><select id="dm" onchange="fillDays()"></select><select id="dy" onchange="fillDays()"></select></div></div>
-        <div style="flex:0"><button class="btn" onclick="loadReport()">แสดงรายงาน</button></div>
-        <div style="flex:0"><button class="btn sec" onclick="window.print()">พิมพ์</button></div>
-      </div>
-    </div>
-    <div class="card" id="reportOut"><p class="muted">เลือกประเภทและวันที่ แล้วกด "แสดงรายงาน"</p></div>
-  </section>
-
-  <!-- พนักงาน -->
-  <section id="tab-users" class="hide">
-    <div class="card">
-      <h3 style="margin-top:0" id="formTitle">เพิ่มพนักงานใหม่</h3>
-      <div class="grid2">
-        <div><label>รหัสพนักงาน</label><input id="uid" readonly></div>
-        <div><label>ชื่อ-สกุล</label><input id="uname"></div>
-        <div><label>ตำแหน่ง</label><input id="upos"></div>
-        <div><label>หน่วยงาน/ฝ่าย</label><input id="udep"></div>
-      </div>
-      <div style="margin-top:12px">
-        <video id="cam" playsinline muted></video>
-        <div class="muted" id="camMsg">กดเปิดกล้องเพื่อลงทะเบียนใบหน้า</div>
-        <button class="btn sec" onclick="openCam()">เปิดกล้อง</button>
-        <button class="btn" onclick="enroll()">ถ่ายใบหน้า (5 ภาพ)</button>
-        <span id="faceState" class="good"></span>
-      </div>
-      <div style="margin-top:12px">
-        <button class="btn" onclick="saveUser()" id="saveBtn">บันทึก</button>
-        <button class="btn sec" onclick="resetForm()">ล้างฟอร์ม / ยกเลิกการแก้ไข</button>
-      </div>
-    </div>
-    <div class="card" style="overflow-x:auto">
-      <table><thead><tr><th>รหัส</th><th>ชื่อ-สกุล</th><th>ตำแหน่ง</th><th>หน่วยงาน/ฝ่าย</th><th class="c">ใบหน้า</th><th class="c">จัดการ</th></tr></thead>
-      <tbody id="userRows"></tbody></table>
-    </div>
-  </section>
-
-  <!-- บันทึกการลา -->
-  <section id="tab-leave" class="hide">
-    <div class="card">
-      <h3 style="margin-top:0">บันทึกการลา (ลาป่วย / ลากิจ / ลาพักร้อน)</h3>
-      <div class="grid2">
-        <div><label>พนักงาน</label><select id="lv_user"></select></div>
-        <div><label>ประเภทการลา</label><select id="lv_type"></select></div>
-        <div><label>ตั้งแต่วันที่</label><input type="date" id="lv_from"></div>
-        <div><label>ถึงวันที่</label><input type="date" id="lv_to"></div>
-        <div><label>หมายเหตุ (ถ้ามี)</label><input id="lv_note" placeholder="เช่น ไข้หวัด / ธุระครอบครัว"></div>
-      </div>
-      <p class="muted">ระบบข้ามวันเสาร์-อาทิตย์ให้อัตโนมัติ (ยังไม่ข้ามวันหยุดนักขัตฤกษ์) | ถ้าบันทึกซ้ำวันเดิม ระบบจะแก้ไขรายการเดิมให้ | ยังบันทึกสาเหตุทีละวันได้จากรายงานรายวัน</p>
-      <button class="btn" onclick="saveLeaveRange()">บันทึกการลา</button>
-    </div>
-    <div class="card" style="overflow-x:auto">
-      <h3 style="margin-top:0">รายการลา <span class="muted">(ย้อนหลัง 60 วัน ถึงล่วงหน้า 120 วัน)</span></h3>
-      <table><thead><tr><th>วันที่</th><th>รหัส</th><th>ชื่อ-สกุล</th><th class="c">ประเภท</th><th>หมายเหตุ</th><th class="c">จัดการ</th></tr></thead>
-      <tbody id="leaveRows"><tr><td colspan="6" class="c muted">กำลังโหลด...</td></tr></tbody></table>
-    </div>
-  </section>
-
-  <!-- ตั้งค่า -->
-  <section id="tab-set" class="hide">
-    <div class="card">
-      <p style="margin-top:0">วันที่ปัจจุบัน: <b id="todayTh2"></b></p>
-      <div class="grid2">
-        <div><label>ชื่อหน่วยงาน (แสดงบนหัวรายงาน)</label><input id="s_ORG_NAME"></div>
-        <div><label>เวลาเริ่มงาน (เกินเวลานี้ = เข้างานสาย)</label><input id="s_WORK_START" type="time"></div>
-        <div><label>เวลาเลิกงาน (ก่อนเวลานี้ = ออกก่อนเวลา)</label><input id="s_WORK_END" type="time"></div>
-        <div><label>ละติจูดที่ทำงาน</label><input id="s_LAT"></div>
-        <div><label>ลองจิจูดที่ทำงาน</label><input id="s_LNG"></div>
-        <div><label>รัศมีที่อนุญาต (เมตร)</label><input id="s_RADIUS"></div>
-        <div><label>ค่าเกณฑ์จับคู่ใบหน้า (น้อย = เข้มงวด, 0.4-0.6)</label><input id="s_MATCH_THRESHOLD"></div>
-        <div><label>เปลี่ยน PIN (เว้นว่างถ้าไม่เปลี่ยน)</label><input id="s_ADMIN_PIN" type="password"></div>
-      </div>
-      <p class="muted">ค่าเริ่มต้น: เริ่มงาน 08:30 น. / เลิกงาน 16:30 น. | โลโก้: อัปโหลดไฟล์ <b>logo.png</b> ไว้ใน GitHub โฟลเดอร์เดียวกับ admin.html (หรือใส่ลิงก์ใน config.js)</p>
-      <p><button class="btn sec" onclick="useHere()">ใช้ตำแหน่งปัจจุบันเป็นจุดที่ทำงาน</button>
-        <button class="btn" onclick="saveSettings()">บันทึกการตั้งค่า</button></p>
-    </div>
-  </section>
-</main>
-</div>
-
+<div class="msg" id="msg">กำลังเริ่มต้น...</div>
+<div class="gps" id="gps">GPS: รอตำแหน่ง...</div>
+<a class="admin" href="admin.html">สำหรับผู้ดูแลระบบ</a>
 <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
 <script src="config.js"></script>
-<script src="common.js"></script>
 <script>
-const $ = id => document.getElementById(id);
 const MODEL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
-const LOGO = FS.logo();
-const TH_M = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-const LT = ['ลาป่วย', 'ลากิจ', 'ลาพักร้อน'];
-let TOKEN = sessionStorage.getItem('fs_tk') || '', editId = '', newDesc = null, modelsOk = false, USERS = [], NEXT = '';
-document.querySelectorAll('img.logo').forEach(i => i.src = LOGO);
-
-/* ---------- API ---------- */
-async function api(action, data = {}) {
-  const r = await FS.post(action, Object.assign({ token: TOKEN }, data));
-  if (r.error === 'unauthorized') { logout(); throw new Error('หมดเวลาเข้าสู่ระบบ'); }
-  return r;
+const TH_M = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','
+ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const $ = id => document.getElementById(id);
+let pos = null, busy = false, hits = 0, cfg = { start: '08:30', end: '16:30' };
+const CFG_ERR = typeof CONFIG === 'undefined' || !CONFIG.API_URL;
+if (typeof CONFIG === 'undefined') window.CONFIG = {};
+$('logo').src = CONFIG.LOGO_URL || 'https://drive.google.com/thumbnail?id=1mrJbjgs8PdZS5jKImMdYR2Ng2w0WdLA&sz=w600';
+const setMsg = t => $('msg').textContent = t;
+const p2 = n => String(n).padStart(2, '0');
+function tick() {
+ const d = new Date();
+ $('clock').textContent = 'วันที่ ' + d.getDate() + ' ' + TH_M[d.getMonth()] + ' พ.ศ. ' + (d.getFullYear() + 543) +
+ ' เวลา ' + p2(d.getHours()) + ':' + p2(d.getMinutes()) + ':' + p2(d.getSeconds()) + ' น.';
 }
-async function testConn() {
-  const r = await FS.ping();
-  alert(r.ok ? 'เชื่อมต่อสำเร็จ\nหน่วยงาน: ' + (r.org || '-') + '\nเวอร์ชันเซิร์ฟเวอร์: ' + (r.v || 'เก่า (ยังไม่ใช่ v4 ให้ Deploy New version)') : r.error);
+setInterval(tick, 1000); tick();
+async function initTf() {
+ try { await faceapi.tf.setBackend('webgl'); await faceapi.tf.ready(); }
+ catch (e) { await faceapi.tf.setBackend('cpu'); await faceapi.tf.ready(); }
 }
-async function login() {
-  $('loginErr').textContent = '';
-  try {
-    const r = await api('login', { pin: $('pin').value });
-    if (!r.ok) return $('loginErr').textContent = r.error;
-    TOKEN = r.token; sessionStorage.setItem('fs_tk', TOKEN); start();
-  } catch (e) { $('loginErr').textContent = e.message; }
+async function init() {
+ if (CFG_ERR) return setMsg('อ่านไฟล์ config.js ไม่ได้ กรุณาตรวจว่าไฟล์ชื่อ config.js (ตัวพิมพ์เล็ก) อยู่โฟลเดอร์เดียวกับ
+หน้านี้ และมีเครื่องหมาย , คั่นระหว่างบรรทัด');
+ try {
+ await initTf();
+ fetch(CONFIG.API_URL).then(r => r.json()).then(c => {
+ if (c.org) $('org').textContent = c.org;
+ if (c.start) cfg.start = c.start;
+ if (c.end) cfg.end = c.end;
+ }).catch(() => {});
+ setMsg('กำลังโหลดโมเดลจดจำใบหน้า...');
+ await Promise.all([
+ faceapi.nets.tinyFaceDetector.loadFromUri(MODEL),
+ faceapi.nets.faceLandmark68Net.loadFromUri(MODEL),
+ faceapi.nets.faceRecognitionNet.loadFromUri(MODEL)
+ ]);
+ navigator.geolocation.watchPosition(
+ p => { pos = p.coords; $('gps').textContent = 'GPS พร้อมใช้งาน (±' + Math.round(p.coords.accuracy) + ' ม.)'; },
+ () => { pos = null; $('gps').textContent = 'GPS: กรุณาอนุญาตการเข้าถึงตำแหน่ง'; },
+ { enableHighAccuracy: true, maximumAge: 5000 });
+ const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 }, audio:
+false });
+ $('v').srcObject = stream;
+ await $('v').play();
+ loop();
+ } catch (e) {
+ setMsg('เปิดกล้องไม่ได้: ' + e.message);
+ }
 }
-function logout() { TOKEN = ''; sessionStorage.removeItem('fs_tk'); $('app').classList.add('hide'); $('loginBox').classList.remove('hide'); }
-function start() {
-  $('loginBox').classList.add('hide'); $('app').classList.remove('hide');
-  const t = thDate(fmt(new Date()));
-  $('todayTh').textContent = t; $('todayTh2').textContent = t;
-  $('lv_type').innerHTML = LT.map(x => '<option>' + x + '</option>').join('');
-  $('lv_from').value = $('lv_to').value = fmt(new Date());
-  initDateSel(); typeChanged();
-  loadUsers().catch(e => alert(e.message)); loadSettings().catch(() => {});
+async function loop() {
+ if (!busy) {
+ const det = await faceapi
+ .detectSingleFace($('v'), new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.6 }))
+ .withFaceLandmarks().withFaceDescriptor();
+ if (det) {
+ hits++;
+ setMsg('ตรวจพบใบหน้า กรุณาอยู่นิ่งสักครู่...');
+ if (hits >= 3) { busy = true; hits = 0; await send(Array.from(det.descriptor)); }
+ } else { hits = 0; setMsg('กรุณามองกล้อง'); }
+ }
+ setTimeout(loop, 400);
 }
-document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
-  document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
-  ['rep', 'users', 'leave', 'set'].forEach(t => $('tab-' + t).classList.toggle('hide', t !== b.dataset.t));
-  if (b.dataset.t === 'leave') loadLeaves();
-});
-
-/* ---------- วันที่ (พุทธศักราช) ---------- */
-const pad = n => String(n).padStart(2, '0');
-const fmt = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
-const parse = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
-const thDate = s => { const d = parse(s); return d.getDate() + ' ' + TH_M[d.getMonth()] + ' พ.ศ. ' + (d.getFullYear() + 543); };
-const thMonth = s => { const d = parse(s); return TH_M[d.getMonth()] + ' พ.ศ. ' + (d.getFullYear() + 543); };
-function initDateSel() {
-  const t = new Date(), yb = t.getFullYear() + 543;
-  $('dm').innerHTML = TH_M.map((m, i) => '<option value="' + (i + 1) + '">' + m + '</option>').join('');
-  let ys = ''; for (let y = yb - 4; y <= yb + 1; y++) ys += '<option value="' + y + '">พ.ศ. ' + y + '</option>';
-  $('dy').innerHTML = ys; $('dy').value = yb; $('dm').value = t.getMonth() + 1;
-  fillDays(t.getDate());
+async function send(descriptor) {
+ if (!pos) return show({ ok: false, title: 'ยังไม่ได้ตำแหน่ง GPS', tag: 'กรุณาเปิด GPS แล้วลองใหม่' });
+ setMsg('กำลังตรวจสอบ...');
+ try {
+ const r = await fetch(CONFIG.API_URL, {
+ method: 'POST',
+ body: JSON.stringify({ action: 'scan', descriptor, lat: pos.latitude, lng: pos.longitude })
+ }).then(r => r.json());
+ if (!r.ok) return show({ ok: false, title: 'ไม่สำเร็จ', tag: r.error });
+ if (r.type === 'IN') {
+ const late = r.status === 'สาย';
+ show({ ok: true, warn: late, title: r.name, id: r.id, time: r.time, note: r.note,
+ tag: late ? 'เข้างานสาย' : 'เข้างาน (ตรงเวลา)',
+ sub: late ? 'เกินเวลา ' + cfg.start + ' น.' : '' });
+ } else {
+ const early = r.status === 'ออกก่อนเวลา';
+ show({ ok: true, warn: early, title: r.name, id: r.id, time: r.time,
+ tag: early ? 'ออกก่อนเวลา' : 'ออกงาน',
+ sub: early ? 'ก่อนเวลา ' + cfg.end + ' น.' : '' });
+ }
+ } catch (e) { show({ ok: false, title: 'เชื่อมต่อไม่ได้', tag: e.message }); }
 }
-function fillDays(keep) {
-  const y = +$('dy').value - 543, m = +$('dm').value, last = new Date(y, m, 0).getDate();
-  const cur = keep || +$('dd').value || 1;
-  let s = ''; for (let d = 1; d <= last; d++) s += '<option value="' + d + '">' + d + '</option>';
-  $('dd').innerHTML = s; $('dd').value = Math.min(cur, last);
+function show(o) {
+ const cls = !o.ok ? 'bad' : (o.warn ? 'warn' : 'ok');
+ const icon = !o.ok ? '✖' : (o.warn ? '⚠' : '✔');
+ $('res').innerHTML = '<div class="icon ' + cls + '">' + icon + '</div>' +
+ '<div class="big">' + o.title + '</div>' + (o.id ? '<div class="eid">รหัส ' + o.id + '</div>' : '') +
+ '<div class="tag ' + cls + '">' + (o.tag || '') + '</div>' +
+ (o.time ? '<div class="tm">' + o.time + ' น.</div>' : '') +
+ (o.sub ? '<div class="sub">' + o.sub + '</div>' : '') +
+ (o.note ? '<div class="sub">' + o.note + '</div>' : '');
+ $('res').classList.add('show');
+ setTimeout(() => { $('res').classList.remove('show'); busy = false; hits = 0; }, 4500);
 }
-const selDate = () => (+$('dy').value - 543) + '-' + pad($('dm').value) + '-' + pad($('dd').value);
-function typeChanged() {
-  const t = $('rtype').value;
-  $('dd').style.display = t === 'monthly' ? 'none' : '';
-  $('modeBox').style.display = t === 'daily' ? '' : 'none';
-  $('dlabel').textContent = { daily: 'เลือกวันที่', weekly: 'เลือกวันใดก็ได้ในสัปดาห์ที่ต้องการ', monthly: 'เลือกเดือนและปี' }[t];
-}
-function range(type, s) {
-  const d = parse(s);
-  if (type === 'daily') return [s, s];
-  if (type === 'weekly') {
-    const a = new Date(d); a.setDate(d.getDate() - ((d.getDay() + 6) % 7));
-    const b = new Date(a); b.setDate(a.getDate() + 6);
-    return [fmt(a), fmt(b)];
-  }
-  return [fmt(new Date(d.getFullYear(), d.getMonth(), 1)), fmt(new Date(d.getFullYear(), d.getMonth() + 1, 0))];
-}
-
-/* ---------- ตัวช่วยคำนวณเวลา ---------- */
-const secs = t => { if (!t) return 0; const p = t.split(':').map(Number); return p[0] * 3600 + p[1] * 60 + (p[2] || 0); };
-const mins = t => Math.floor(secs(t) / 60);
-const hrs = (i, o) => (i && o) ? Math.max(0, (secs(o) - secs(i)) / 3600) : 0;
-const hms = t => { t = Math.max(0, Math.round(t)); return Math.floor(t / 3600) + ' ชม. ' + Math.floor(t % 3600 / 60) + ' นาที ' + (t % 60) + ' วินาที'; };
-const hm = h => { const t = Math.round(h * 60); return Math.floor(t / 60) + ' ชม. ' + (t % 60) + ' นาที'; };
-const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-/** นับวันทำการ (จันทร์-ศุกร์) ตั้งแต่ from ถึง to โดยนับถึงวันนี้ หากเลยเวลาเลิกงานแล้ว มิฉะนั้นนับถึงเมื่อวาน */
-function workdays(from, to, endHM) {
-  const now = new Date(), cut = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  if (now.getHours() * 60 + now.getMinutes() < mins(endHM + ':00')) cut.setDate(cut.getDate() - 1);
-  const end = new Date(Math.min(parse(to), cut));
-  let n = 0;
-  for (let d = parse(from); d <= end; d.setDate(d.getDate() + 1)) if (d.getDay() % 6) n++;
-  return n;
-}
-
-/* ---------- การลา (ในรายงานรายวัน) ---------- */
-const leaveOpts = cur => '<option value="">-- ไม่ระบุ --</option>' +
-  LT.map(t => '<option' + (t === cur ? ' selected' : '') + '>' + t + '</option>').join('');
-async function setLeave(uid, date) {
-  try {
-    const r = await api('saveLeave', { userId: uid, date, type: $('lt_' + uid).value, note: $('ln_' + uid).value.trim() });
-    if (!r.ok) return alert(r.error);
-    loadReport(true); // โหลดซ้ำแบบเงียบ ๆ เพื่ออัปเดตสรุป
-  } catch (e) { alert(e.message); }
-}
-
-/* ---------- รายงาน ---------- */
-async function loadReport(silent) {
-  const type = $('rtype').value, [a, b] = range(type, selDate());
-  if (!silent) $('reportOut').innerHTML = '<p class="muted">กำลังโหลด...</p>';
-  let r;
-  try { r = await api('report', { from: a, to: b }); } catch (e) { return $('reportOut').innerHTML = '<p class="late">' + e.message + '</p>'; }
-  if (!r.ok) return $('reportOut').innerHTML = '<p class="late">' + esc(r.error) + '</p>';
-  const title = { daily: 'รายงานการลงเวลาปฏิบัติงานประจำวัน', weekly: 'รายงานการลงเวลาปฏิบัติงานประจำสัปดาห์', monthly: 'รายงานการลงเวลาปฏิบัติงานประจำเดือน' }[type];
-  const period = type === 'daily' ? 'วันที่ ' + thDate(a) : type === 'weekly' ? 'ระหว่างวันที่ ' + thDate(a) + ' ถึง ' + thDate(b) : 'ประจำเดือน ' + thMonth(a);
-  let h = '<div class="rep-head"><img class="logo" src="' + LOGO + '" alt="" onerror="this.style.display=\'none\'"><h2>' + esc(r.org) + '</h2>' +
-    '<h3>' + title + '</h3><p class="hd">' + period + '</p></div>';
-
-  if (type === 'daily') {
-    const startM = mins(r.start + ':00'), endM = mins(r.end + ':00');
-    const rows = r.rows.slice().sort((x, y) => x.timeIn.localeCompare(y.timeIn));
-    const present = new Set(rows.map(x => x.userId));
-    let nLate = 0, nEarly = 0;
-    const full = $('rmode').value === 'full';
-    h += '<table><thead><tr><th class="c ord">ลำดับ</th>' + (full ? '<th class="nw">รหัส</th>' : '') +
-      '<th class="nm">ชื่อ-สกุล</th><th class="c">เวลาเข้า</th><th class="c">เวลาออก</th>' +
-      (full ? '<th class="c">สาย (นาที)</th><th class="c">ออกก่อน (นาที)</th><th class="c">รวมเวลาทำงาน</th>' : '') +
-      '<th class="c">สถานะ</th></tr></thead><tbody>' +
-      rows.map((x, i) => {
-        const late = Math.max(0, mins(x.timeIn) - startM);
-        const early = x.timeOut ? Math.max(0, endM - mins(x.timeOut)) : 0;
-        if (late) nLate++; if (early) nEarly++;
-        const st = [late ? '<span class="late">มาสาย</span>' : '', early ? '<span class="early">ออกก่อนเวลา</span>' : '',
-          !x.timeOut ? '<span class="muted">ยังไม่ออกงาน</span>' : '', (!late && !early && x.timeOut) ? '<span class="good">ปกติ</span>' : ''].filter(Boolean).join(' / ');
-        return '<tr><td class="c">' + (i + 1) + '</td>' + (full ? '<td class="nw">' + esc(x.userId) + '</td>' : '') +
-          '<td class="nm">' + esc(x.name) + '</td><td class="c nw">' + x.timeIn + '</td><td class="c nw">' + (x.timeOut || '-') + '</td>' +
-          (full ? '<td class="c ' + (late ? 'late' : '') + '">' + (late || '-') + '</td><td class="c ' + (early ? 'early' : '') + '">' + (early || '-') +
-            '</td><td class="c nw">' + (x.timeOut ? hms(secs(x.timeOut) - secs(x.timeIn)) : '-') + '</td>' : '') +
-          '<td class="c">' + st + '</td></tr>';
-      }).join('') + (rows.length ? '' : '<tr><td colspan="' + (full ? 9 : 5) + '" class="c muted">ไม่มีข้อมูลการลงเวลาในวันนี้</td></tr>') + '</tbody></table>';
-
-    const abs = r.users.filter(u => !present.has(u.id));
-    const lvMap = {}; (r.leaves || []).forEach(l => lvMap[l.userId] = l);
-    const cnt = t => abs.filter(u => lvMap[u.id] && lvMap[u.id].type === t).length;
-    const unk = abs.filter(u => !lvMap[u.id]).length;
-    h += '<p>สรุป: มาทำงาน <b>' + present.size + '</b> คน | มาสาย <b>' + nLate + '</b> คน | ออกก่อนเวลา <b>' + nEarly +
-      '</b> คน | ไม่มา <b>' + abs.length + '</b> คน (ลาป่วย ' + cnt('ลาป่วย') + ' | ลากิจ ' + cnt('ลากิจ') +
-      ' | ลาพักร้อน ' + cnt('ลาพักร้อน') + ' | ไม่ระบุสาเหตุ ' + unk + ')</p>';
-    if (abs.length) h += '<p style="margin-bottom:4px"><b>รายชื่อผู้ไม่มาทำงาน</b> ' +
-      '<span class="muted noprint">(เลือกสาเหตุได้ ระบบบันทึกให้อัตโนมัติ)</span></p>' +
-      '<table><thead><tr><th class="c ord">ลำดับ</th><th class="nm">ชื่อ-สกุล</th><th class="c">สาเหตุ</th><th>หมายเหตุ</th></tr></thead><tbody>' +
-      abs.map((u, i) => {
-        const l = lvMap[u.id] || {}, fn = 'setLeave(\'' + u.id + '\',\'' + a + '\')';
-        return '<tr><td class="c">' + (i + 1) + '</td><td class="nm">' + esc(u.name) + '</td>' +
-          '<td class="c"><select class="noprint lv-in" id="lt_' + u.id + '" onchange="' + fn + '">' + leaveOpts(l.type) + '</select>' +
-          '<span class="onlyprint">' + esc(l.type || 'ไม่ระบุ') + '</span></td>' +
-          '<td><input class="noprint lv-in" id="ln_' + u.id + '" value="' + esc(l.note || '') + '" placeholder="เช่น ไข้หวัด" onchange="' + fn + '">' +
-          '<span class="onlyprint">' + esc(l.note || '') + '</span></td></tr>';
-      }).join('') + '</tbody></table>';
-  } else {
-    const by = {};
-    const mk = (id, name, created) => ({ id, name, created, days: 0, late: 0, h: 0, ls: 0, lb: 0, lv: 0 });
-    r.users.forEach(u => by[u.id] = mk(u.id, u.name, u.createdAt || ''));
-    r.rows.forEach(x => {
-      const u = by[x.userId] || (by[x.userId] = mk(x.userId, x.name, ''));
-      u.days++; if (x.status === 'สาย') u.late++; u.h += hrs(x.timeIn, x.timeOut);
-    });
-    (r.leaves || []).forEach(l => {
-      const u = by[l.userId]; if (!u) return;
-      if (l.type === 'ลาป่วย') u.ls++; else if (l.type === 'ลากิจ') u.lb++; else if (l.type === 'ลาพักร้อน') u.lv++;
-    });
-    const list = Object.values(by).sort((p, q) => p.id.localeCompare(q.id));
-    h += '<table><thead><tr><th class="c ord">ลำดับ</th><th class="nw">รหัส</th><th class="nm">ชื่อ-สกุล</th>' +
-      '<th class="c">มาทำงาน (วัน)</th><th class="c">มาสาย (ครั้ง)</th><th class="c">ลาป่วย (วัน)</th>' +
-      '<th class="c">ลากิจ (วัน)</th><th class="c">ลาพักร้อน (วัน)</th><th class="c">ขาดงาน (วัน)</th>' +
-      '<th class="c">รวมชั่วโมงทำงาน</th></tr></thead><tbody>' +
-      list.map((u, i) => {
-        const from = u.created && u.created > a ? u.created : a;
-        const abs = Math.max(0, workdays(from, b, r.end) - u.days - u.ls - u.lb - u.lv);
-        return '<tr><td class="c">' + (i + 1) + '</td><td class="nw">' + esc(u.id) + '</td><td class="nm">' + esc(u.name) +
-          '</td><td class="c">' + u.days + '</td><td class="c ' + (u.late ? 'late' : '') + '">' + u.late +
-          '</td><td class="c">' + (u.ls || '-') + '</td><td class="c">' + (u.lb || '-') + '</td><td class="c">' + (u.lv || '-') +
-          '</td><td class="c ' + (abs ? 'late' : '') + '">' + abs + '</td><td class="c">' + hm(u.h) + '</td></tr>';
-      }).join('') + (list.length ? '' : '<tr><td colspan="10" class="c muted">ไม่มีข้อมูล</td></tr>') + '</tbody></table>' +
-      '<p class="muted">ขาดงาน = วันทำการ (จันทร์-ศุกร์) ที่ผ่านมาแล้ว ซึ่งไม่มีบันทึกเข้างานและไม่มีบันทึกการลา (ยังไม่หักวันหยุดนักขัตฤกษ์) | บันทึกสาเหตุการลาได้ที่รายงานรายวัน หรือแท็บ "บันทึกการลา"</p>';
-  }
-  if (!r.rows.length) h += '<p class="muted">ไม่พบข้อมูลในช่วงวันที่นี้ (ชีต Attendance มีข้อมูล ' + (r.sheetRows ?? '?') + ' แถว, วันที่ล่าสุดในชีต: ' + (r.lastDate || '-') + ')</p>';
-  h += '<div class="sign"><div>ลงชื่อ ................................ ผู้จัดทำ<br>( ................................ )</div>' +
-    '<div>ลงชื่อ ................................ ผู้ตรวจสอบ<br>( ................................ )</div></div>' +
-    '<p class="muted" style="text-align:right">พิมพ์เมื่อ ' + thDate(fmt(new Date())) + '</p>';
-  $('reportOut').innerHTML = h;
-}
-
-/* ---------- แท็บบันทึกการลา ---------- */
-async function saveLeaveRange() {
-  const userId = $('lv_user').value, from = $('lv_from').value, to = $('lv_to').value || from;
-  if (!userId) return alert('กรุณาเลือกพนักงาน');
-  if (!from) return alert('กรุณาเลือกวันที่');
-  if (to < from) return alert('วันที่สิ้นสุดต้องไม่น้อยกว่าวันที่เริ่มต้น');
-  try {
-    const r = await api('saveLeaveRange', { userId, type: $('lv_type').value, from, to, note: $('lv_note').value.trim() });
-    if (!r.ok) return alert(r.error);
-    alert('บันทึกการลาแล้ว ' + r.count + ' วันทำการ');
-    $('lv_note').value = '';
-    loadLeaves();
-  } catch (e) { alert(e.message); }
-}
-async function loadLeaves() {
-  const t = new Date(), a = new Date(t), b = new Date(t);
-  a.setDate(t.getDate() - 60); b.setDate(t.getDate() + 120);
-  $('leaveRows').innerHTML = '<tr><td colspan="6" class="c muted">กำลังโหลด...</td></tr>';
-  try {
-    const r = await api('leaves', { from: fmt(a), to: fmt(b) });
-    if (!r.ok) return $('leaveRows').innerHTML = '<tr><td colspan="6" class="c late">' + esc(r.error) + '</td></tr>';
-    $('leaveRows').innerHTML = r.leaves.map(l =>
-      '<tr><td class="nw">' + thDate(l.date) + '</td><td class="nw">' + esc(l.userId) + '</td><td>' + esc(l.name) +
-      '</td><td class="c"><span class="tag-leave">' + esc(l.type) + '</span></td><td>' + esc(l.note) +
-      '</td><td class="c"><button class="btn red sm" onclick="delLeave(\'' + l.userId + '\',\'' + l.date + '\')">ลบ</button></td></tr>').join('') ||
-      '<tr><td colspan="6" class="c muted">ยังไม่มีรายการลา</td></tr>';
-  } catch (e) { $('leaveRows').innerHTML = '<tr><td colspan="6" class="c late">' + esc(e.message) + '</td></tr>'; }
-}
-async function delLeave(uid, date) {
-  if (!confirm('ลบรายการลาของ ' + uid + ' วันที่ ' + thDate(date) + ' ?')) return;
-  const r = await api('saveLeave', { userId: uid, date, type: '' });
-  if (!r.ok) return alert(r.error);
-  loadLeaves();
-}
-
-/* ---------- พนักงาน (เพิ่ม / แก้ไข / ลบ) ---------- */
-async function loadUsers() {
-  const r = await api('users');
-  USERS = r.users; NEXT = r.nextId;
-  if (!editId) $('uid').value = NEXT;
-  $('lv_user').innerHTML = USERS.filter(u => u.active).map(u => '<option value="' + esc(u.id) + '">' + esc(u.id) + ' ' + esc(u.name) + '</option>').join('');
-  $('userRows').innerHTML = USERS.map(u => '<tr><td><b>' + esc(u.id) + '</b></td><td>' + esc(u.name) + '</td><td>' + esc(u.position) + '</td><td>' + esc(u.department) +
-    '</td><td class="c">' + (u.hasFace ? '<span class="good">✔</span>' : '<span class="late">ยังไม่มี</span>') + '</td><td class="c">' +
-    '<button class="btn sec sm" onclick="editUser(\'' + u.id + '\')">แก้ไข</button> ' +
-    '<button class="btn red sm" onclick="delUser(\'' + u.id + '\')">ลบ</button></td></tr>').join('') ||
-    '<tr><td colspan="6" class="c muted">ยังไม่มีพนักงาน</td></tr>';
-}
-function editUser(id) {
-  const u = USERS.find(x => x.id === id); if (!u) return;
-  editId = id; newDesc = null;
-  $('uid').value = id; $('uname').value = u.name; $('upos').value = u.position || ''; $('udep').value = u.department || '';
-  $('formTitle').textContent = 'แก้ไขข้อมูล ' + id + ' (ถ่ายใบหน้าใหม่ได้ถ้าต้องการเปลี่ยน)';
-  $('saveBtn').textContent = 'บันทึกการแก้ไข'; $('faceState').textContent = '';
-  window.scrollTo(0, 0);
-}
-function resetForm() {
-  editId = ''; newDesc = null;
-  ['uname', 'upos', 'udep'].forEach(i => $(i).value = '');
-  $('uid').value = NEXT; $('formTitle').textContent = 'เพิ่มพนักงานใหม่'; $('saveBtn').textContent = 'บันทึก'; $('faceState').textContent = '';
-}
-async function delUser(id) {
-  const u = USERS.find(x => x.id === id);
-  if (!confirm('ลบพนักงาน ' + id + ' ' + (u ? u.name : '') + ' ?\n(ข้อมูลใบหน้าจะถูกลบ ประวัติการลงเวลาเดิมยังอยู่ใน Google Sheet)')) return;
-  const r = await api('deleteUser', { id });
-  if (!r.ok) return alert(r.error);
-  if (editId === id) resetForm();
-  loadUsers();
-}
-async function saveUser() {
-  if (!$('uname').value.trim()) return alert('กรุณากรอกชื่อ-สกุล');
-  if (!editId && !newDesc) return alert('กรุณาเปิดกล้องและถ่ายใบหน้าก่อนบันทึก');
-  const r = await api('saveUser', { id: editId, name: $('uname').value.trim(), position: $('upos').value.trim(), department: $('udep').value.trim(), descriptor: newDesc });
-  if (!r.ok) return alert(r.error);
-  alert(editId ? 'บันทึกการแก้ไขแล้ว' : 'เพิ่มพนักงานแล้ว รหัส ' + r.id);
-  editId = ''; resetForm(); await loadUsers(); resetForm();
-}
-async function openCam() {
-  try {
-    if (!modelsOk) {
-      $('camMsg').textContent = 'กำลังโหลดโมเดล...';
-      try { await faceapi.tf.setBackend('webgl'); await faceapi.tf.ready(); }
-      catch (e) { await faceapi.tf.setBackend('cpu'); await faceapi.tf.ready(); }
-      await Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri(MODEL), faceapi.nets.faceLandmark68Net.loadFromUri(MODEL), faceapi.nets.faceRecognitionNet.loadFromUri(MODEL)]);
-      modelsOk = true;
-    }
-    $('cam').srcObject = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
-    await $('cam').play(); $('camMsg').textContent = 'กล้องพร้อม: ให้ผู้ลงทะเบียนมองตรงและขยับหน้าเล็กน้อย';
-  } catch (e) { $('camMsg').textContent = 'เปิดกล้องไม่ได้: ' + e.message; }
-}
-async function enroll() {
-  if (!modelsOk || !$('cam').srcObject) return alert('กรุณากดเปิดกล้องก่อน');
-  const samples = [];
-  for (let tries = 0; samples.length < 5 && tries < 30; tries++) {
-    const d = await faceapi.detectSingleFace($('cam'), new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.6 })).withFaceLandmarks().withFaceDescriptor();
-    if (d) { samples.push(Array.from(d.descriptor)); $('camMsg').textContent = 'ถ่ายแล้ว ' + samples.length + '/5'; }
-    await new Promise(r => setTimeout(r, 400));
-  }
-  if (samples.length < 5) return $('camMsg').textContent = 'ตรวจไม่พบใบหน้าชัดเจน ลองใหม่';
-  newDesc = samples[0].map((_, i) => samples.reduce((s, v) => s + v[i], 0) / samples.length);
-  $('faceState').textContent = '✔ ถ่ายใบหน้าเรียบร้อย';
-}
-
-/* ---------- ตั้งค่า ---------- */
-const KEYS = ['ORG_NAME', 'WORK_START', 'WORK_END', 'LAT', 'LNG', 'RADIUS', 'MATCH_THRESHOLD'];
-async function loadSettings() {
-  const r = await api('getSettings');
-  KEYS.forEach(k => $('s_' + k).value = r.settings[k] || '');
-  if (r.settings.ORG_NAME) $('hOrg').textContent = r.settings.ORG_NAME;
-}
-async function saveSettings() {
-  if ($('s_WORK_START').value && $('s_WORK_END').value && $('s_WORK_START').value >= $('s_WORK_END').value)
-    return alert('เวลาเริ่มงานต้องน้อยกว่าเวลาเลิกงาน');
-  const settings = {};
-  KEYS.concat('ADMIN_PIN').forEach(k => settings[k] = $('s_' + k).value);
-  const r = await api('saveSettings', { settings });
-  alert(r.ok ? 'บันทึกการตั้งค่าแล้ว' : r.error); $('s_ADMIN_PIN').value = '';
-  loadSettings();
-}
-function useHere() {
-  navigator.geolocation.getCurrentPosition(p => { $('s_LAT').value = p.coords.latitude.toFixed(6); $('s_LNG').value = p.coords.longitude.toFixed(6); },
-    e => alert('อ่านตำแหน่งไม่ได้: ' + e.message), { enableHighAccuracy: true });
-}
-
-if (TOKEN) start();
+init();
 </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ผู้ดูแลระบบ ECT KPP FaceScanner Attendance System</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1f5f9;--card:#fff;--tx:#0f172a;--mut:#64748b;--ac:#2563eb;--bd:#e2e8f0;--ok:#16a34a;--bad:#dc2626;--
+warn:#d97706}
+*{box-sizing:border-box}
+body{margin:0;background:var(-
