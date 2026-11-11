@@ -78,9 +78,10 @@ th.nm{text-align:center}
   <h2 style="margin:0 0 6px">ECT KPP FaceScanner Attendance System</h2>
   <label>PIN</label>
   <input id="pin" type="password" inputmode="numeric" autocomplete="off" onkeydown="if(event.key==='Enter')login()">
-  <p id="loginErr" style="color:var(--bad);min-height:1.4em"></p>
+  <p id="loginErr" style="color:var(--bad);min-height:1.4em;white-space:pre-line;text-align:left;font-size:.9rem"></p>
   <button class="btn" style="width:100%" onclick="login()">เข้าสู่ระบบ</button>
   <p class="muted"><a href="index.html">กลับหน้าสแกนใบหน้า</a></p>
+  <p class="muted"><a href="#" onclick="testConn();return false">ทดสอบการเชื่อมต่อ</a> | <a href="#" onclick="FS.setUrl();return false">ตั้งค่าลิงก์ API</a></p>
 </div>
 
 <div id="app" class="hide">
@@ -187,12 +188,11 @@ th.nm{text-align:center}
 
 <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
 <script src="config.js"></script>
+<script src="common.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const MODEL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
-const CFG_ERR = typeof CONFIG === 'undefined' || !CONFIG.API_URL;
-if (typeof CONFIG === 'undefined') window.CONFIG = {};
-const LOGO = CONFIG.LOGO_URL || 'logo.png';
+const LOGO = FS.logo();
 const TH_M = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 const LT = ['ลาป่วย', 'ลากิจ', 'ลาพักร้อน'];
 let TOKEN = sessionStorage.getItem('fs_tk') || '', editId = '', newDesc = null, modelsOk = false, USERS = [], NEXT = '';
@@ -200,10 +200,13 @@ document.querySelectorAll('img.logo').forEach(i => i.src = LOGO);
 
 /* ---------- API ---------- */
 async function api(action, data = {}) {
-  if (CFG_ERR) throw new Error('อ่านไฟล์ config.js ไม่ได้ กรุณาตรวจว่าไฟล์ชื่อ config.js (ตัวพิมพ์เล็ก) อยู่โฟลเดอร์เดียวกับหน้านี้ และมีเครื่องหมาย , คั่นระหว่างบรรทัด');
-  const r = await fetch(CONFIG.API_URL, { method: 'POST', body: JSON.stringify({ action, token: TOKEN, ...data }) }).then(r => r.json());
+  const r = await FS.post(action, Object.assign({ token: TOKEN }, data));
   if (r.error === 'unauthorized') { logout(); throw new Error('หมดเวลาเข้าสู่ระบบ'); }
   return r;
+}
+async function testConn() {
+  const r = await FS.ping();
+  alert(r.ok ? 'เชื่อมต่อสำเร็จ\nหน่วยงาน: ' + (r.org || '-') + '\nเวอร์ชันเซิร์ฟเวอร์: ' + (r.v || 'เก่า (ยังไม่ใช่ v4 ให้ Deploy New version)') : r.error);
 }
 async function login() {
   $('loginErr').textContent = '';
@@ -220,7 +223,8 @@ function start() {
   $('todayTh').textContent = t; $('todayTh2').textContent = t;
   $('lv_type').innerHTML = LT.map(x => '<option>' + x + '</option>').join('');
   $('lv_from').value = $('lv_to').value = fmt(new Date());
-  initDateSel(); typeChanged(); loadUsers(); loadSettings();
+  initDateSel(); typeChanged();
+  loadUsers().catch(e => alert(e.message)); loadSettings().catch(() => {});
 }
 document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
