@@ -1,319 +1,152 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FaceScan — ผู้ดูแลระบบ</title>
-<link rel="stylesheet" href="style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ECT KPP FaceScanner Attendance System</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  .center{min-height:100vh;display:grid;place-items:center;padding:20px}
-  .login{width:100%;max-width:380px;padding:40px 32px;text-align:center;display:flex;flex-direction:column;gap:14px}
-  .logo.big{width:66px;height:66px;margin:0 auto 6px;font-size:1.4rem;border-radius:20px}
-  .pin{text-align:center;font-size:1.6rem;letter-spacing:12px}
-  .app{display:grid;grid-template-columns:250px 1fr;gap:20px;padding:20px;min-height:100vh}
-  .sidebar{padding:22px;display:flex;flex-direction:column;gap:26px;position:sticky;top:20px;height:calc(100vh - 40px)}
-  nav{display:flex;flex-direction:column;gap:6px;flex:1}
-  nav button{all:unset;cursor:pointer;padding:12px 16px;border-radius:12px;color:var(--muted);border:1px solid transparent;transition:.2s}
-  nav button:hover{background:rgba(255,255,255,.08);color:#fff}
-  nav button.active{color:#fff;border-color:var(--border);background:linear-gradient(135deg,rgba(139,92,246,.4),rgba(6,182,212,.25))}
-  .content{display:flex;flex-direction:column;gap:20px;min-width:0}
-  .head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
-  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px}
-  .kpi{padding:22px;position:relative;overflow:hidden}
-  .kpi::after{content:'';position:absolute;width:120px;height:120px;border-radius:50%;right:-40px;top:-40px;background:var(--c);filter:blur(30px);opacity:.5}
-  .kpi small{color:var(--muted)} .kpi b{display:block;font-size:2.3rem;font-weight:600;margin-top:6px}
-  .panel{padding:22px} .panel h3{margin-bottom:14px}
-  .filters{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px}
-  .filters .field{margin:0}
-  .user-box{width:100%;max-width:820px;padding:28px;max-height:92vh;overflow:auto}
-  .enroll{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:8px}
-  .enroll-cam{position:relative;aspect-ratio:4/3;border-radius:18px;overflow:hidden;background:#000;border:1px solid var(--border)}
-  .enroll-cam video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
-  .dots{display:flex;gap:8px;margin:14px 0}
-  .dots span{width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.2);transition:.3s}
-  .dots span.on{background:var(--ok);box-shadow:0 0 12px var(--ok)}
-  .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
-  .settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:4px 18px}
-  @media(max-width:860px){
-    .app{grid-template-columns:1fr}.sidebar{position:static;height:auto}
-    nav{flex-direction:row;overflow:auto}.enroll{grid-template-columns:1fr}
-  }
+:root{--bg:#0f172a;--tx:#f1f5f9;--mut:#94a3b8;--ok:#22c55e;--bad:#ef4444;--warn:#f59e0b;--ac:#38bdf8}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--tx);font-family:'Sarabun',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;padding:16px}
+.logo{height:72px;width:auto;margin-bottom:6px}
+h1{font-size:1.2rem;margin:2px 0;text-align:center}
+.clock{color:var(--ac);font-size:.95rem;margin:2px 0 12px;text-align:center}
+.cam{position:relative;width:100%;max-width:420px;aspect-ratio:3/4;background:#000;border-radius:20px;overflow:hidden;border:3px solid var(--ac)}
+.cam video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.ring{position:absolute;inset:12% 14%;border:3px dashed rgba(255,255,255,.55);border-radius:50%;pointer-events:none}
+.msg{margin-top:14px;font-size:1.1rem;text-align:center;min-height:1.6em}
+.gps{margin-top:6px;font-size:.85rem;color:var(--mut)}
+.result{display:none;position:absolute;inset:0;background:rgba(15,23,42,.94);flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
+.result.show{display:flex}
+.result .icon{font-size:3.4rem}
+.result .big{font-size:1.6rem;font-weight:700;margin:6px 0}
+.result .eid{color:var(--mut);font-size:.9rem}
+.result .tag{font-size:1.5rem;font-weight:700;margin:8px 0}
+.result .tm{font-size:2.2rem;font-weight:700}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+.sub{color:var(--mut);font-size:.9rem}
+a.admin{margin-top:18px;color:var(--mut);font-size:.85rem}
 </style>
 </head>
 <body>
-<div class="bg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
-
-<!-- LOGIN -->
-<div id="loginView" class="center">
-  <form class="glass login" id="loginForm">
-    <div class="logo big">FS</div>
-    <h2>เข้าสู่ระบบผู้ดูแล</h2>
-    <p class="muted">กรอก PIN เพื่อจัดการระบบ</p>
-    <input class="input pin" id="pin" type="password" inputmode="numeric" placeholder="••••" required>
-    <button class="btn btn-primary" id="loginBtn">เข้าสู่ระบบ</button>
-    <a href="index.html" class="muted">← กลับหน้าสแกน</a>
-  </form>
+<img class="logo" id="logo" alt="" onerror="this.style.display='none'">
+<h1 id="org">ECT KPP FaceScanner Attendance System</h1>
+<div class="clock" id="clock"></div>
+<div class="cam">
+  <video id="v" playsinline muted></video>
+  <div class="ring"></div>
+  <div class="result" id="res"></div>
 </div>
+<div class="msg" id="msg">กำลังเริ่มต้น...</div>
+<div class="gps" id="gps">GPS: รอตำแหน่ง...</div>
+<a class="admin" href="admin.html">สำหรับผู้ดูแลระบบ</a>
 
-<!-- APP -->
-<div id="appView" class="app hidden">
-  <aside class="sidebar glass">
-    <div class="brand"><div class="logo">FS</div><div><h1>FaceScan</h1><small class="muted">Admin Console</small></div></div>
-    <nav>
-      <button data-tab="dash" class="active">ภาพรวม</button>
-      <button data-tab="report">รายงาน</button>
-      <button data-tab="users">พนักงาน</button>
-      <button data-tab="settings">ตั้งค่า</button>
-    </nav>
-    <button class="btn btn-sm btn-danger" onclick="logout()">ออกจากระบบ</button>
-  </aside>
-
-  <main class="content">
-    <!-- Dashboard -->
-    <section id="tab-dash" class="tab">
-      <div class="head"><div><h2>ภาพรวมวันนี้</h2><small class="muted" id="dashDate"></small></div>
-        <button class="btn btn-sm" onclick="loadDash()">รีเฟรช</button></div>
-      <div class="kpis" style="margin-top:16px">
-        <div class="kpi glass" style="--c:#8b5cf6"><small>พนักงานทั้งหมด</small><b id="kTotal">-</b></div>
-        <div class="kpi glass" style="--c:#34d399"><small>มาทำงานแล้ว</small><b id="kPresent">-</b></div>
-        <div class="kpi glass" style="--c:#fbbf24"><small>มาสาย</small><b id="kLate">-</b></div>
-        <div class="kpi glass" style="--c:#fb7185"><small>ยังไม่มา</small><b id="kAbsent">-</b></div>
-      </div>
-      <div class="glass panel" style="margin-top:20px"><h3>บันทึกเวลาวันนี้</h3>
-        <div class="table-wrap"><table id="dashTable"></table></div></div>
-    </section>
-
-    <!-- Report -->
-    <section id="tab-report" class="tab hidden">
-      <div class="head"><h2>รายงานการลงเวลา</h2></div>
-      <div class="glass panel" style="margin-top:16px">
-        <div class="filters">
-          <div class="field"><label>ตั้งแต่วันที่</label><input type="date" class="input" id="rFrom"></div>
-          <div class="field"><label>ถึงวันที่</label><input type="date" class="input" id="rTo"></div>
-          <div class="field" style="flex:1;min-width:180px"><label>ค้นหา</label><input class="input" id="rSearch" placeholder="ชื่อ / รหัส" oninput="renderReport()"></div>
-          <button class="btn btn-primary" onclick="loadReport()">ค้นหา</button>
-          <button class="btn" onclick="exportCSV()">ดาวน์โหลด CSV</button>
-        </div>
-        <div class="table-wrap"><table id="reportTable"></table></div>
-      </div>
-    </section>
-
-    <!-- Users -->
-    <section id="tab-users" class="tab hidden">
-      <div class="head"><h2>จัดการพนักงาน</h2><button class="btn btn-primary" onclick="openUser()">+ เพิ่มพนักงาน</button></div>
-      <div class="glass panel" style="margin-top:16px"><div class="table-wrap"><table id="userTable"></table></div></div>
-    </section>
-
-    <!-- Settings -->
-    <section id="tab-settings" class="tab hidden">
-      <div class="head"><h2>ตั้งค่าระบบ</h2></div>
-      <form class="glass panel" id="setForm" style="margin-top:16px">
-        <div class="settings-grid">
-          <div class="field"><label>ชื่อองค์กร</label><input class="input" name="ORG_NAME"></div>
-          <div class="field"><label>PIN ผู้ดูแลใหม่ (เว้นว่างถ้าไม่เปลี่ยน)</label><input class="input" name="ADMIN_PIN" type="password"></div>
-          <div class="field"><label>เวลาเข้างาน</label><input class="input" name="WORK_START" type="time"></div>
-          <div class="field"><label>เวลาเลิกงาน</label><input class="input" name="WORK_END" type="time"></div>
-          <div class="field"><label>ละติจูด</label><input class="input" name="LAT"></div>
-          <div class="field"><label>ลองจิจูด</label><input class="input" name="LNG"></div>
-          <div class="field"><label>รัศมีที่อนุญาต (เมตร)</label><input class="input" name="RADIUS" type="number"></div>
-          <div class="field"><label>ค่าความเข้มงวดการจับคู่ (0.4 เข้ม – 0.6 หลวม)</label><input class="input" name="MATCH_THRESHOLD" type="number" step="0.01"></div>
-        </div>
-        <div class="actions">
-          <button type="button" class="btn" onclick="useMyLocation()">ใช้ตำแหน่งปัจจุบัน</button>
-          <button class="btn btn-primary">บันทึกการตั้งค่า</button>
-        </div>
-      </form>
-    </section>
-  </main>
-</div>
-
-<!-- USER MODAL -->
-<div class="modal" id="userModal">
-  <div class="glass user-box">
-    <div class="head"><h2 id="uTitle">เพิ่มพนักงาน</h2><button class="btn btn-sm" onclick="closeUser()">✕</button></div>
-    <div class="enroll">
-      <div>
-        <div class="field"><label>รหัสพนักงาน (เว้นว่างเพื่อสร้างอัตโนมัติ)</label><input class="input" id="uId"></div>
-        <div class="field"><label>ชื่อ-นามสกุล *</label><input class="input" id="uName"></div>
-        <div class="field"><label>ตำแหน่ง</label><input class="input" id="uPos"></div>
-        <div class="field"><label>แผนก</label><input class="input" id="uDept"></div>
-        <div class="field"><label>สถานะ</label>
-          <select class="input" id="uActive"><option value="1">ใช้งาน</option><option value="0">ระงับ</option></select></div>
-      </div>
-      <div>
-        <div class="enroll-cam"><video id="eVideo" autoplay muted playsinline></video></div>
-        <div class="dots" id="dots"><span></span><span></span><span></span><span></span><span></span></div>
-        <small class="muted" id="eHint">กดปุ่มด้านล่างเพื่อบันทึกใบหน้า 5 ภาพ (ขยับหน้าเล็กน้อยระหว่างถ่าย)</small><br><br>
-        <button class="btn" id="enrollBtn" onclick="enroll()">บันทึกใบหน้า</button>
-      </div>
-    </div>
-    <div class="actions">
-      <button class="btn" onclick="closeUser()">ยกเลิก</button>
-      <button class="btn btn-primary" id="saveUserBtn" onclick="saveUser()">บันทึก</button>
-    </div>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
 <script src="config.js"></script>
 <script>
-let token = sessionStorage.getItem('fs_token');
-let users = [], reportRows = [], modelsReady = false, stream = null, newDesc = null, editing = null;
+const MODEL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
+const TH_M = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const $ = id => document.getElementById(id);
+let pos = null, busy = false, hits = 0, cfg = { start: '08:30', end: '16:30' };
 
-const badge = s => `<span class="badge ${s === 'ปกติ' ? 'ok' : s ? 'warn' : 'info'}">${s || '-'}</span>`;
-const todayISO = () => new Date().toLocaleDateString('sv-SE');
+const CFG_ERR = typeof CONFIG === 'undefined' || !CONFIG.API_URL;
+if (typeof CONFIG === 'undefined') window.CONFIG = {};
+$('logo').src = CONFIG.LOGO_URL || 'https://drive.google.com/thumbnail?id=1mrJbjgs8PdZS-5jKImMdYR2Ng2w0WdLA&sz=w600';
+const setMsg = t => $('msg').textContent = t;
+const p2 = n => String(n).padStart(2, '0');
 
-async function call(action, data = {}) {
-  const r = await api(action, { token, ...data });
-  if (r.error === 'UNAUTHORIZED') { logout(); throw 'หมดเวลาเข้าสู่ระบบ'; }
-  if (!r.ok) throw r.error;
-  return r;
+function tick() {
+  const d = new Date();
+  $('clock').textContent = 'วันที่ ' + d.getDate() + ' ' + TH_M[d.getMonth()] + ' พ.ศ. ' + (d.getFullYear() + 543) +
+    '  เวลา ' + p2(d.getHours()) + ':' + p2(d.getMinutes()) + ':' + p2(d.getSeconds()) + ' น.';
 }
-function guard(fn) { return async (...a) => { try { await fn(...a); } catch (e) { toast(String(e), 'err'); } }; }
+setInterval(tick, 1000); tick();
 
-/* ---------- Auth ---------- */
-$('loginForm').onsubmit = async e => {
-  e.preventDefault();
-  $('loginBtn').innerHTML = '<span class="spinner"></span>';
-  const r = await api('login', { pin: $('pin').value }).catch(() => ({ ok: false, error: 'เชื่อมต่อไม่ได้' }));
-  $('loginBtn').textContent = 'เข้าสู่ระบบ';
-  if (!r.ok) return toast(r.error, 'err');
-  token = r.token; sessionStorage.setItem('fs_token', token); showApp();
-};
-function showApp() { $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); loadDash(); }
-function logout() { sessionStorage.removeItem('fs_token'); token = null; location.reload(); }
-
-/* ---------- Tabs ---------- */
-document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
-  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('active', x === b));
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('hidden', t.id !== 'tab-' + b.dataset.tab));
-  ({ dash: loadDash, report: loadReport, users: loadUsers, settings: loadSettings })[b.dataset.tab]();
-});
-
-function table(el, head, rows) {
-  $(el).innerHTML = `<thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead>
-    <tbody>${rows.length ? rows.join('') : `<tr><td colspan="${head.length}" class="empty">ไม่มีข้อมูล</td></tr>`}</tbody>`;
+async function initTf() {
+  try { await faceapi.tf.setBackend('webgl'); await faceapi.tf.ready(); }
+  catch (e) { await faceapi.tf.setBackend('cpu'); await faceapi.tf.ready(); }
 }
 
-/* ---------- Dashboard ---------- */
-const loadDash = guard(async () => {
-  const r = await call('dashboard');
-  $('dashDate').textContent = new Date().toLocaleDateString('th-TH', { dateStyle: 'full' });
-  $('kTotal').textContent = r.total; $('kPresent').textContent = r.present;
-  $('kLate').textContent = r.late; $('kAbsent').textContent = r.absent;
-  table('dashTable', ['พนักงาน', 'เข้างาน', 'สถานะ', 'ออกงาน', 'สถานะออก', 'ชั่วโมง'],
-    r.rows.map(x => `<tr><td><span class="avatar" style="margin-right:10px">${x.name.charAt(0)}</span>${x.name}</td>
-      <td>${x.timeIn}</td><td>${badge(x.status)}</td><td>${x.timeOut || '-'}</td>
-      <td>${x.timeOut ? badge(x.statusOut) : '-'}</td><td>${x.hours || '-'}</td></tr>`));
-});
-
-/* ---------- Report ---------- */
-const loadReport = guard(async () => {
-  if (!$('rFrom').value) { $('rFrom').value = todayISO(); $('rTo').value = todayISO(); }
-  const r = await call('report', { from: $('rFrom').value, to: $('rTo').value });
-  reportRows = r.rows; renderReport();
-});
-function filtered() {
-  const q = $('rSearch').value.trim().toLowerCase();
-  return reportRows.filter(x => !q || x.name.toLowerCase().includes(q) || x.userId.toLowerCase().includes(q));
-}
-function renderReport() {
-  table('reportTable', ['วันที่', 'รหัส', 'ชื่อ', 'เข้า', 'สถานะ', 'ออก', 'สถานะออก', 'ชั่วโมง', 'ระยะ (ม.)'],
-    filtered().map(x => `<tr><td>${x.date}</td><td>${x.userId}</td><td>${x.name}</td><td>${x.timeIn}</td>
-      <td>${badge(x.status)}</td><td>${x.timeOut || '-'}</td><td>${x.timeOut ? badge(x.statusOut) : '-'}</td>
-      <td>${x.hours || '-'}</td><td>${x.distIn}</td></tr>`));
-}
-function exportCSV() {
-  const head = ['date', 'userId', 'name', 'timeIn', 'status', 'timeOut', 'statusOut', 'hours'];
-  const csv = [head.join(',')].concat(filtered().map(x => head.map(k => `"${x[k] ?? ''}"`).join(','))).join('\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv' }));
-  a.download = `attendance_${$('rFrom').value}_${$('rTo').value}.csv`; a.click();
-}
-
-/* ---------- Users ---------- */
-const loadUsers = guard(async () => {
-  users = (await call('users')).users;
-  table('userTable', ['พนักงาน', 'รหัส', 'ตำแหน่ง', 'แผนก', 'ใบหน้า', 'สถานะ', ''],
-    users.map(u => `<tr><td><span class="avatar" style="margin-right:10px">${u.name.charAt(0)}</span>${u.name}</td>
-      <td>${u.id}</td><td>${u.position || '-'}</td><td>${u.department || '-'}</td>
-      <td>${u.hasFace ? '<span class="badge ok">ลงทะเบียนแล้ว</span>' : '<span class="badge err">ยังไม่มี</span>'}</td>
-      <td>${u.active ? '<span class="badge info">ใช้งาน</span>' : '<span class="badge warn">ระงับ</span>'}</td>
-      <td><button class="btn btn-sm" onclick="openUser('${u.id}')">แก้ไข</button>
-          <button class="btn btn-sm btn-danger" onclick="delUser('${u.id}')">ลบ</button></td></tr>`));
-});
-
-async function openUser(id) {
-  editing = users.find(u => u.id === id) || null; newDesc = null;
-  $('uTitle').textContent = editing ? 'แก้ไขพนักงาน' : 'เพิ่มพนักงาน';
-  $('uId').value = editing?.id || ''; $('uId').disabled = !!editing;
-  $('uName').value = editing?.name || ''; $('uPos').value = editing?.position || '';
-  $('uDept').value = editing?.department || ''; $('uActive').value = editing && !editing.active ? '0' : '1';
-  setDots(0); $('eHint').textContent = 'กดปุ่มด้านล่างเพื่อบันทึกใบหน้า 5 ภาพ (ขยับหน้าเล็กน้อยระหว่างถ่าย)';
-  $('userModal').classList.add('show');
+async function init() {
+  if (CFG_ERR) return setMsg('อ่านไฟล์ config.js ไม่ได้ กรุณาตรวจว่าไฟล์ชื่อ config.js (ตัวพิมพ์เล็ก) อยู่โฟลเดอร์เดียวกับหน้านี้ และมีเครื่องหมาย , คั่นระหว่างบรรทัด');
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-    $('eVideo').srcObject = stream;
-  } catch { toast('เปิดกล้องไม่ได้', 'err'); }
-  if (!modelsReady) loadModels().then(() => modelsReady = true);
-}
-function closeUser() { $('userModal').classList.remove('show'); stream?.getTracks().forEach(t => t.stop()); }
-function setDots(n) { [...$('dots').children].forEach((d, i) => d.classList.toggle('on', i < n)); }
-
-async function enroll() {
-  $('enrollBtn').disabled = true;
-  if (!modelsReady) { $('eHint').textContent = 'กำลังโหลดโมเดล AI...'; await loadModels(); modelsReady = true; }
-  const samples = []; let tries = 0;
-  $('eHint').textContent = 'มองกล้อง แล้วค่อยๆ หันซ้าย-ขวาเล็กน้อย';
-  while (samples.length < 5 && tries++ < 80) {
-    const d = await faceapi.detectSingleFace($('eVideo'), detOpts()).withFaceLandmarks().withFaceDescriptor();
-    if (d && d.detection.score > 0.7) { samples.push(d.descriptor); setDots(samples.length); await sleep(600); }
-    else await sleep(200);
+    await initTf();
+    fetch(CONFIG.API_URL).then(r => r.json()).then(c => {
+      if (c.org) $('org').textContent = c.org;
+      if (c.start) cfg.start = c.start;
+      if (c.end) cfg.end = c.end;
+    }).catch(() => {});
+    setMsg('กำลังโหลดโมเดลจดจำใบหน้า...');
+    await Promise.all([
+      faceapi.nets.tinyFaceDetector.loadFromUri(MODEL),
+      faceapi.nets.faceLandmark68Net.loadFromUri(MODEL),
+      faceapi.nets.faceRecognitionNet.loadFromUri(MODEL)
+    ]);
+    navigator.geolocation.watchPosition(
+      p => { pos = p.coords; $('gps').textContent = 'GPS พร้อมใช้งาน (±' + Math.round(p.coords.accuracy) + ' ม.)'; },
+      () => { pos = null; $('gps').textContent = 'GPS: กรุณาอนุญาตการเข้าถึงตำแหน่ง'; },
+      { enableHighAccuracy: true, maximumAge: 5000 });
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 }, audio: false });
+    $('v').srcObject = stream;
+    await $('v').play();
+    loop();
+  } catch (e) {
+    setMsg('เปิดกล้องไม่ได้: ' + e.message);
   }
-  $('enrollBtn').disabled = false;
-  if (samples.length < 5) { setDots(0); return toast('ตรวจไม่พบใบหน้าชัดเจน ลองใหม่อีกครั้ง', 'err'); }
-  newDesc = Array.from({ length: 128 }, (_, k) => samples.reduce((s, d) => s + d[k], 0) / samples.length);
-  $('eHint').textContent = 'บันทึกใบหน้าสำเร็จ ✓'; toast('เก็บข้อมูลใบหน้าครบ 5 ภาพ', 'ok');
 }
 
-const saveUser = guard(async () => {
-  $('saveUserBtn').disabled = true;
+async function loop() {
+  if (!busy) {
+    const det = await faceapi
+      .detectSingleFace($('v'), new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.6 }))
+      .withFaceLandmarks().withFaceDescriptor();
+    if (det) {
+      hits++;
+      setMsg('ตรวจพบใบหน้า กรุณาอยู่นิ่งสักครู่...');
+      if (hits >= 3) { busy = true; hits = 0; await send(Array.from(det.descriptor)); }
+    } else { hits = 0; setMsg('กรุณามองกล้อง'); }
+  }
+  setTimeout(loop, 400);
+}
+
+async function send(descriptor) {
+  if (!pos) return show({ ok: false, title: 'ยังไม่ได้ตำแหน่ง GPS', tag: 'กรุณาเปิด GPS แล้วลองใหม่' });
+  setMsg('กำลังตรวจสอบ...');
   try {
-    await call('saveUser', { user: {
-      id: $('uId').value.trim(), isNew: !editing, name: $('uName').value.trim(),
-      position: $('uPos').value.trim(), department: $('uDept').value.trim(),
-      active: $('uActive').value === '1', descriptor: newDesc
-    }});
-    toast('บันทึกข้อมูลพนักงานแล้ว', 'ok'); closeUser(); loadUsers();
-  } finally { $('saveUserBtn').disabled = false; }
-});
-
-const delUser = guard(async id => {
-  if (!confirm('ยืนยันการลบพนักงาน ' + id + ' ?')) return;
-  await call('deleteUser', { id }); toast('ลบเรียบร้อย', 'ok'); loadUsers();
-});
-
-/* ---------- Settings ---------- */
-const loadSettings = guard(async () => {
-  const s = (await call('getSettings')).settings;
-  [...$('setForm').elements].forEach(el => { if (el.name && el.name !== 'ADMIN_PIN') el.value = s[el.name] ?? ''; });
-});
-$('setForm').onsubmit = guard(async e => {
-  e.preventDefault();
-  const settings = Object.fromEntries(new FormData($('setForm')));
-  await call('saveSettings', { settings });
-  $('setForm').ADMIN_PIN.value = ''; toast('บันทึกการตั้งค่าแล้ว', 'ok');
-});
-function useMyLocation() {
-  navigator.geolocation.getCurrentPosition(p => {
-    $('setForm').LAT.value = p.coords.latitude.toFixed(6);
-    $('setForm').LNG.value = p.coords.longitude.toFixed(6);
-    toast('ดึงพิกัดปัจจุบันแล้ว', 'ok');
-  }, () => toast('ไม่สามารถดึงตำแหน่งได้', 'err'), { enableHighAccuracy: true });
+    const r = await fetch(CONFIG.API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'scan', descriptor, lat: pos.latitude, lng: pos.longitude })
+    }).then(r => r.json());
+    if (!r.ok) return show({ ok: false, title: 'ไม่สำเร็จ', tag: r.error });
+    if (r.type === 'IN') {
+      const late = r.status === 'สาย';
+      show({ ok: true, warn: late, title: r.name, id: r.id, time: r.time, note: r.note,
+             tag: late ? 'เข้างานสาย' : 'เข้างาน (ตรงเวลา)',
+             sub: late ? 'เกินเวลา ' + cfg.start + ' น.' : '' });
+    } else {
+      const early = r.status === 'ออกก่อนเวลา';
+      show({ ok: true, warn: early, title: r.name, id: r.id, time: r.time,
+             tag: early ? 'ออกก่อนเวลา' : 'ออกงาน',
+             sub: early ? 'ก่อนเวลา ' + cfg.end + ' น.' : '' });
+    }
+  } catch (e) { show({ ok: false, title: 'เชื่อมต่อไม่ได้', tag: e.message }); }
 }
 
-if (token) showApp();
+function show(o) {
+  const cls = !o.ok ? 'bad' : (o.warn ? 'warn' : 'ok');
+  const icon = !o.ok ? '✖' : (o.warn ? '⚠' : '✔');
+  $('res').innerHTML = '<div class="icon ' + cls + '">' + icon + '</div>' +
+    '<div class="big">' + o.title + '</div>' + (o.id ? '<div class="eid">รหัส ' + o.id + '</div>' : '') +
+    '<div class="tag ' + cls + '">' + (o.tag || '') + '</div>' +
+    (o.time ? '<div class="tm">' + o.time + ' น.</div>' : '') +
+    (o.sub ? '<div class="sub">' + o.sub + '</div>' : '') +
+    (o.note ? '<div class="sub">' + o.note + '</div>' : '');
+  $('res').classList.add('show');
+  setTimeout(() => { $('res').classList.remove('show'); busy = false; hits = 0; }, 4500);
+}
+
+init();
 </script>
-<link rel="stylesheet" href="theme-admin.css?v=1">
 </body>
-</html>
+</html> 
