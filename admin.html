@@ -2,25 +2,27 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ผู้ดูแลระบบ ECT KPP FaceScanner Attendance System</title>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f1f5f9;--card:#fff;--tx:#0f172a;--mut:#64748b;--ac:#2563eb;--bd:#e2e8f0;--ok:#16a34a;--bad:#dc2626;--warn:#d97706}
 *{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--tx);font-family:'Sarabun',system-ui,sans-serif}
-header{background:var(--ac);color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
-header .brand{display:flex;align-items:center;gap:10px}
-header h1{margin:0;font-size:1.05rem}
+header{background:var(--ac);color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px 12px;flex-wrap:wrap}
+header .brand{display:flex;align-items:center;gap:10px;min-width:0}
+header h1{margin:0;font-size:clamp(.95rem,3.6vw,1.05rem)}
 header .logo{height:40px;background:#fff;border-radius:8px;padding:2px}
-main{max-width:1050px;margin:0 auto;padding:16px}
+main{max-width:1100px;margin:0 auto;padding:16px}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:16px}
 .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
 .tabs button{padding:8px 16px;border:1px solid var(--bd);background:#fff;border-radius:999px;font:inherit;cursor:pointer}
 .tabs button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
 input,select,button{font:inherit}
-input,select{padding:8px 10px;border:1px solid var(--bd);border-radius:8px;width:100%;background:#fff}
+input,select{padding:8px 10px;border:1px solid var(--bd);border-radius:8px;width:100%;min-width:0;background:#fff;font-size:16px}
 input[readonly]{background:#f1f5f9;font-weight:700;color:var(--ac)}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
 label{display:block;font-size:.85rem;color:var(--mut);margin:8px 0 2px}
 .btn{padding:8px 16px;border:0;border-radius:8px;background:var(--ac);color:#fff;cursor:pointer}
 .btn.sec{background:#e2e8f0;color:var(--tx)}.btn.red{background:var(--bad)}.btn.sm{padding:4px 10px;font-size:.85rem}
@@ -36,34 +38,77 @@ td.c,th.c{text-align:center}
 .login{max-width:340px;margin:12vh auto;text-align:center}
 .login .logo{height:80px;margin-bottom:8px}
 .login label,.login input{text-align:left}
-.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:12px}
 video{width:100%;max-width:320px;border-radius:12px;background:#000;transform:scaleX(-1)}
 .muted{color:var(--mut);font-size:.85rem}
 .rep-head{text-align:center;margin-bottom:12px}
-.rep-head .logo{height:80px;margin-bottom:4px}
+.rep-head .logo{height:80px;max-width:60%;object-fit:contain;margin-bottom:4px}
 .rep-head h2{margin:0;font-size:1.3rem}.rep-head h3{margin:4px 0;font-size:1.1rem}.rep-head p{margin:0}
 .nw{white-space:nowrap}
 .ord{width:1%;white-space:nowrap}
 .nm{width:1%;white-space:nowrap}
 th.nm{text-align:center}
-@font-face{font-family:'THSarabunRep';font-weight:400;src:local('TH Sarabun New'),local('THSarabunNew'),local('TH SarabunPSK'),local('THSarabunPSK'),url('fonts/THSarabunNew.ttf')}
-@font-face{font-family:'THSarabunRep';font-weight:700;src:local('TH Sarabun New Bold'),local('THSarabunNew-Bold'),local('TH SarabunPSK Bold'),local('THSarabunPSK-Bold'),url('fonts/THSarabunNew-Bold.ttf')}
-#reportOut,#reportOut table,#reportOut p{font-family:'THSarabunRep','TH Sarabun New','TH SarabunPSK','Sarabun',sans-serif;font-size:16pt;font-weight:400}
+.sign{display:none;justify-content:space-around;margin-top:56px;text-align:center}
+.printonly{display:none}
+
+/* ---------- รายงานบนหน้าจอ: เลื่อนซ้าย-ขวาได้เมื่อจอแคบ ---------- */
+#reportOut{overflow-x:auto;-webkit-overflow-scrolling:touch;font-size:15px}
+#reportOut th,#reportOut td{white-space:nowrap}
 #reportOut .muted,#reportOut .good,#reportOut .late,#reportOut .early{font-size:inherit}
 #reportOut .good,#reportOut .late,#reportOut .early{font-weight:400}
-#reportOut th{font-size:18pt;font-weight:700}
-#reportOut .rep-head h2,#reportOut .rep-head h3,#reportOut .rep-head p.hd{font-family:inherit;font-size:18pt;font-weight:700;margin:2px 0}
-.sign{display:none;justify-content:space-around;margin-top:56px;text-align:center}
-  .printonly{display:none}
+#reportOut .late,#reportOut .early{font-weight:600}
+#reportOut input,#reportOut select{min-width:130px}
+
+@font-face{font-family:'THSarabunRep';font-weight:400;src:local('TH Sarabun New'),local('THSarabunNew'),local('TH SarabunPSK'),local('THSarabunPSK'),url('fonts/THSarabunNew.ttf')}
+@font-face{font-family:'THSarabunRep';font-weight:700;src:local('TH Sarabun New Bold'),local('THSarabunNew-Bold'),local('TH SarabunPSK Bold'),local('THSarabunPSK-Bold'),url('fonts/THSarabunNew-Bold.ttf')}
+
+/* ---------- หน้ากระดาษ A4 ---------- */
+@page{size:A4 portrait;margin:14mm}
+@page land{size:A4 landscape;margin:12mm}
+
 @media print{
-  body{background:#fff}
-  header,.tabs,.noprint,#tab-users,#tab-set{display:none!important}
-  main{padding:0;max-width:none}
-  .card{border:0;padding:0;margin:0}
+  html,body{background:#fff;width:auto}
+  header,.tabs,.noprint,#tab-users,#tab-set,#loginBox{display:none!important}
+  main{padding:0;margin:0;max-width:none}
+  .card{border:0;border-radius:0;padding:0;margin:0}
   .sign{display:flex}
-   .printonly{display:inline}
-  th{background:#eee!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  @page{size:A4;margin:14mm}
+  .printonly{display:inline}
+
+  #reportOut{overflow:visible;font-family:'THSarabunRep','TH Sarabun New','TH SarabunPSK','Sarabun',sans-serif;font-size:16pt;font-weight:400;color:#000}
+  #reportOut.rep-land{page:land;font-size:13pt}
+  #reportOut table,#reportOut p{font-family:inherit;font-size:inherit;color:#000}
+  #reportOut table{width:100%;table-layout:auto;border-collapse:collapse}
+  #reportOut th,#reportOut td{white-space:normal;padding:2px 5px;border:1px solid #333;font-size:inherit}
+  #reportOut td.nw,#reportOut th.nw,#reportOut td.nm,#reportOut th.nm,#reportOut td.ord,#reportOut th.ord{white-space:nowrap}
+  #reportOut th{font-weight:700;background:#eee!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #reportOut thead{display:table-header-group}
+  #reportOut tr{break-inside:avoid;page-break-inside:avoid}
+  #reportOut .late,#reportOut .early,#reportOut .good,#reportOut .muted{font-weight:400;color:#000;font-size:inherit}
+  #reportOut .rep-head{margin-bottom:8px}
+  #reportOut .rep-head .logo{height:22mm;max-width:none}
+  #reportOut .rep-head h2,#reportOut .rep-head h3,#reportOut .rep-head p.hd{font-family:inherit;font-size:18pt;font-weight:700;margin:2px 0}
+  #reportOut.rep-land .rep-head h2,#reportOut.rep-land .rep-head h3,#reportOut.rep-land .rep-head p.hd{font-size:16pt}
+  #reportOut p{margin:6px 0}
+  .sign{margin-top:14mm;break-inside:avoid;page-break-inside:avoid}
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width:760px){
+  main{padding:12px}
+  .card{padding:12px}
+  .row>div{flex:1 1 100%;max-width:none!important}
+  .row>div[style*="flex:0"]{flex:1 1 calc(50% - 6px)}
+  .row .btn{width:100%}
+  .tabs button{flex:1 1 auto;padding:8px 12px;font-size:.92rem}
+  header{padding:8px 12px}
+  .login{margin:6vh auto}
+}
+@media (max-width:480px){
+  .dsel{flex-wrap:wrap}
+  .dsel select{flex:1 1 30%}
+  #reportOut{font-size:14px}
+  table{font-size:.85rem}
+  th,td{padding:5px 6px}
 }
 </style>
 </head>
@@ -72,7 +117,7 @@ th.nm{text-align:center}
 <div id="loginBox" class="card login">
   <img class="logo" alt="" onerror="this.style.display='none'"><br>
   <h2 style="margin:0 0 8px">ผู้ดูแลระบบ</h2>
-  <h2 style="margin:0 0 6px">ECT KPP FaceScanner Attendance System</h2>
+  <h2 style="margin:0 0 6px;font-size:1.1rem">ECT KPP FaceScanner Attendance System</h2>
   <label>PIN</label>
   <input id="pin" type="password" inputmode="numeric" autocomplete="off" onkeydown="if(event.key==='Enter')login()">
   <p id="loginErr" style="color:var(--bad);min-height:1.4em"></p>
@@ -101,13 +146,13 @@ th.nm{text-align:center}
           <select id="rtype" onchange="typeChanged()"><option value="daily">รายวัน</option><option value="weekly">รายสัปดาห์</option><option value="monthly">รายเดือน</option></select></div>
         <div id="modeBox" style="max-width:150px"><label>รูปแบบรายงาน</label>
           <select id="rmode"><option value="full">แบบเต็ม</option><option value="short">แบบย่อ</option></select></div>
-        <div style="flex:2;min-width:300px"><label id="dlabel">เลือกวันที่</label>
+        <div style="flex:2 1 260px;min-width:0"><label id="dlabel">เลือกวันที่</label>
           <div class="dsel"><select id="dd"></select><select id="dm" onchange="fillDays()"></select><select id="dy" onchange="fillDays()"></select></div></div>
         <div style="flex:0"><button class="btn" onclick="loadReport()">แสดงรายงาน</button></div>
         <div style="flex:0"><button class="btn sec" onclick="window.print()">พิมพ์</button></div>
       </div>
     </div>
-    <div class="card" id="reportOut"><p class="muted">เลือกประเภทและวันที่ แล้วกด "แสดงรายงาน"</p></div>
+    <div class="card rep-port" id="reportOut"><p class="muted">เลือกประเภทและวันที่ แล้วกด "แสดงรายงาน"</p></div>
   </section>
 
   <!-- พนักงาน -->
@@ -243,13 +288,16 @@ const hrs = (i, o) => (i && o) ? Math.max(0, (secs(o) - secs(i)) / 3600) : 0;
 const hms = t => { t = Math.max(0, Math.round(t)); return Math.floor(t / 3600) + ' ชม. ' + Math.floor(t % 3600 / 60) + ' นาที ' + (t % 60) + ' วินาที'; };
 const hm = h => { const t = Math.round(h * 60); return Math.floor(t / 60) + ' ชม. ' + (t % 60) + ' นาที'; };
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const LTYPES = ['ลาป่วย', 'ลากิจ', 'ลาพักร้อน', 'อื่นๆ'];
+
+/* ---------- สาเหตุการลา ---------- */
+const LTYPES = ['ลาป่วย', 'ลากิจ', 'ลาพักร้อน', 'อื่นๆ'];
 let LDATE = '';
 async function setLeave(id) {
   const r = await api('saveLeave', { date: LDATE, userId: id, type: $('lt_' + id).value, note: $('ln_' + id).value.trim() });
   if (!r.ok) return alert(r.error);
   loadReport();
 }
+
 /** นับวันทำการ (จันทร์-ศุกร์) ตั้งแต่ from ถึง to โดยนับถึงวันนี้ หากเลยเวลาเลิกงานแล้ว มิฉะนั้นนับถึงเมื่อวาน */
 function workdays(from, to, endHM) {
   const now = new Date(), cut = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -263,9 +311,12 @@ function workdays(from, to, endHM) {
 /* ---------- รายงาน ---------- */
 async function loadReport() {
   const type = $('rtype').value, [a, b] = range(type, selDate());
+  // รายวันแบบย่อ = A4 แนวตั้ง / แบบเต็ม, รายสัปดาห์, รายเดือน = A4 แนวนอน
+  const wide = type !== 'daily' || $('rmode').value === 'full';
+  $('reportOut').className = 'card ' + (wide ? 'rep-land' : 'rep-port');
   $('reportOut').innerHTML = '<p class="muted">กำลังโหลด...</p>';
   let r;
-  try { r = await api('report', { from: a, to: b }); } catch (e) { return $('reportOut').innerHTML = '<p class="late">' + e.message + '</p>'; }
+  try { r = await api('report', { from: a, to: b }); } catch (e) { return $('reportOut').innerHTML = '<p class="late">' + esc(e.message) + '</p>'; }
   if (!r.ok) return $('reportOut').innerHTML = '<p class="late">' + esc(r.error) + '</p>';
   const title = { daily: 'รายงานการลงเวลาปฏิบัติงานประจำวัน', weekly: 'รายงานการลงเวลาปฏิบัติงานประจำสัปดาห์', monthly: 'รายงานการลงเวลาปฏิบัติงานประจำเดือน' }[type];
   const period = type === 'daily' ? 'วันที่ ' + thDate(a) : type === 'weekly' ? 'ระหว่างวันที่ ' + thDate(a) + ' ถึง ' + thDate(b)
@@ -357,7 +408,7 @@ async function loadUsers() {
   USERS = r.users; NEXT = r.nextId;
   if (!editId) $('uid').value = NEXT;
   $('userRows').innerHTML = USERS.map(u => '<tr><td><b>' + esc(u.id) + '</b></td><td>' + esc(u.name) + '</td><td>' + esc(u.position) + '</td><td>' + esc(u.department) +
-    '</td><td class="c">' + (u.hasFace ? '<span class="good">✔</span>' : '<span class="late">ยังไม่มี</span>') + '</td><td class="c">' +
+    '</td><td class="c">' + (u.hasFace ? '<span class="good">✔</span>' : '<span class="late">ยังไม่มี</span>') + '</td><td class="c nw">' +
     '<button class="btn sec sm" onclick="editUser(\'' + u.id + '\')">แก้ไข</button> ' +
     '<button class="btn red sm" onclick="delUser(\'' + u.id + '\')">ลบ</button></td></tr>').join('') ||
     '<tr><td colspan="6" class="c muted">ยังไม่มีพนักงาน</td></tr>';
