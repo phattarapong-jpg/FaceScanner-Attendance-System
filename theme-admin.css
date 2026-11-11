@@ -1,0 +1,128 @@
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@500;600;700&display=swap');
+
+@media screen{
+:root{
+  --ac:#4f46e5; --ac2:#06b6d4;
+  --bg:#f4f6fb; --card:#fff; --bd:#e5e7eb;
+  --tx:#0f172a; --mut:#64748b;
+  --ok:#16a34a; --bad:#e11d48; --warn:#d97706;
+  --ring:rgba(79,70,229,.18);
+}
+body{
+  background:
+    radial-gradient(50rem 30rem at 0% 0%, rgba(79,70,229,.08), transparent 60%),
+    radial-gradient(40rem 30rem at 100% 0%, rgba(6,182,212,.08), transparent 60%),
+    var(--bg);
+  background-attachment:fixed;color:var(--tx);
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- Header ---------- */
+header{
+  position:sticky;top:0;z-index:50;padding:12px 24px;
+  background:linear-gradient(120deg,var(--ac),#7c3aed 55%,var(--ac2));
+  box-shadow:0 8px 24px -8px rgba(79,70,229,.5);
+}
+header h1{font-family:'Prompt',sans-serif;font-weight:600;font-size:1.1rem;letter-spacing:.2px}
+header .logo{height:42px;border-radius:12px;padding:3px;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+header .muted{color:rgba(255,255,255,.85)}
+header .btn{
+  background:rgba(255,255,255,.16);color:#fff;
+  border:1px solid rgba(255,255,255,.35);box-shadow:none;
+}
+header .btn:hover{background:rgba(255,255,255,.28)}
+
+main{padding:24px 16px 40px}
+
+/* ---------- Tabs ---------- */
+.tabs{
+  width:fit-content;max-width:100%;padding:6px;gap:4px;border-radius:999px;
+  background:#fff;border:1px solid var(--bd);
+  box-shadow:0 4px 14px -6px rgba(15,23,42,.12);
+}
+.tabs button{
+  border:0;background:transparent;color:var(--mut);font-weight:600;
+  padding:9px 20px;transition:.2s;
+}
+.tabs button:hover{color:var(--ac);background:#eef2ff}
+.tabs button.on{
+  background:linear-gradient(135deg,var(--ac),#7c3aed);color:#fff;
+  box-shadow:0 6px 16px -4px rgba(79,70,229,.55);
+}
+
+/* ---------- Card ---------- */
+.card{
+  border-radius:18px;padding:22px;border:1px solid rgba(226,232,240,.8);
+  box-shadow:0 1px 2px rgba(15,23,42,.04),0 10px 30px -12px rgba(15,23,42,.12);
+  animation:fadeUp .4s ease both;
+}
+
+/* ---------- Form ---------- */
+label{font-weight:600;font-size:.82rem;margin:10px 0 5px}
+input,select{
+  padding:10px 12px;border-radius:10px;border:1px solid #d9dee7;
+  transition:border-color .2s, box-shadow .2s;
+}
+input:hover,select:hover{border-color:#c3c9d6}
+input:focus,select:focus{outline:0;border-color:var(--ac);box-shadow:0 0 0 4px var(--ring)}
+input[readonly]{background:#eef2ff;border-color:#c7d2fe}
+
+/* ---------- Buttons ---------- */
+.btn{
+  padding:10px 18px;border-radius:10px;font-weight:600;
+  background:linear-gradient(135deg,var(--ac),#7c3aed);color:#fff;
+  box-shadow:0 6px 16px -6px rgba(79,70,229,.6);
+  transition:transform .15s, box-shadow .2s, filter .2s;
+}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.08);box-shadow:0 10px 20px -8px rgba(79,70,229,.7)}
+.btn:active{transform:translateY(0) scale(.98)}
+.btn.sec{background:#fff;color:var(--tx);border:1px solid var(--bd);box-shadow:0 2px 6px -2px rgba(15,23,42,.1)}
+.btn.sec:hover{border-color:var(--ac);color:var(--ac)}
+.btn.red{background:linear-gradient(135deg,#f43f5e,#e11d48);box-shadow:0 6px 16px -6px rgba(225,29,72,.55)}
+.btn.sm{padding:5px 12px;border-radius:8px;font-size:.82rem}
+
+/* ---------- Table ---------- */
+table{
+  border-collapse:separate;border-spacing:0;background:#fff;
+  border:1px solid var(--bd);border-radius:14px;overflow:hidden;
+}
+th,td{border:0;border-bottom:1px solid #eef0f4;padding:11px 12px}
+th{background:#f8fafc;color:#475569;font-weight:600;font-size:.84rem}
+tbody tr:nth-child(even) td{background:#fbfcfe}
+tbody tr:hover td{background:#eef2ff}
+tr:last-child td{border-bottom:0}
+
+/* ป้ายสถานะ (เฉพาะ span ไม่กระทบ td) */
+span.good,span.late,span.early{
+  display:inline-flex;align-items:center;padding:2px 10px;border-radius:999px;
+  font-size:.8rem;font-weight:600;
+}
+span.good{background:#dcfce7;color:#15803d}
+span.late{background:#ffe4e6;color:#be123c}
+span.early{background:#fef3c7;color:#b45309}
+
+/* ---------- Login ---------- */
+.login{
+  padding:34px 28px;border-radius:24px;border:1px solid transparent;
+  background:linear-gradient(#fff,#fff) padding-box,
+             linear-gradient(135deg,var(--ac),#7c3aed,var(--ac2)) border-box;
+  box-shadow:0 30px 60px -20px rgba(79,70,229,.35);
+}
+.login .btn{width:100%;margin-top:14px;padding:12px}
+.login input{text-align:center;letter-spacing:6px;font-size:1.2rem}
+
+/* ---------- อื่น ๆ ---------- */
+video{border-radius:16px;box-shadow:0 12px 30px -10px rgba(15,23,42,.45)}
+.rep-head h2,.rep-head h3{font-family:'Prompt',sans-serif;font-weight:600}
+
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:10px;border:2px solid var(--bg)}
+
+@media (max-width:640px){
+  header{flex-wrap:wrap;padding:10px 14px}
+  .tabs{width:100%}
+  .tabs button{flex:1}
+  .card{padding:16px}
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+}
