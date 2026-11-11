@@ -15,7 +15,7 @@ h1{font-size:1.2rem;margin:2px 0;text-align:center}
 .cam{position:relative;width:100%;max-width:420px;aspect-ratio:3/4;background:#000;border-radius:20px;overflow:hidden;border:3px solid var(--ac)}
 .cam video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
 .ring{position:absolute;inset:12% 14%;border:3px dashed rgba(255,255,255,.55);border-radius:50%;pointer-events:none}
-.msg{margin-top:14px;font-size:1.1rem;text-align:center;min-height:1.6em}
+.msg{margin-top:14px;font-size:1.1rem;text-align:center;min-height:1.6em;white-space:pre-line}
 .gps{margin-top:6px;font-size:.85rem;color:var(--mut)}
 .result{display:none;position:absolute;inset:0;background:rgba(15,23,42,.94);flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
 .result.show{display:flex}
@@ -40,18 +40,19 @@ a.admin{margin-top:18px;color:var(--mut);font-size:.85rem}
 </div>
 <div class="msg" id="msg">กำลังเริ่มต้น...</div>
 <div class="gps" id="gps">GPS: รอตำแหน่ง...</div>
+<div class="gps" id="srv">เซิร์ฟเวอร์: กำลังตรวจสอบ...</div>
 <a class="admin" href="admin.html">สำหรับผู้ดูแลระบบ</a>
+<a class="admin" href="#" onclick="FS.setUrl();return false">ตั้งค่าลิงก์ API</a>
 
 <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
 <script src="config.js"></script>
+<script src="common.js"></script>
 <script>
 const MODEL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
 const TH_M = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 const $ = id => document.getElementById(id);
 let pos = null, busy = false, hits = 0, cfg = { start: '08:30', end: '16:30' };
-const CFG_ERR = typeof CONFIG === 'undefined' || !CONFIG.API_URL;
-if (typeof CONFIG === 'undefined') window.CONFIG = {};
-$('logo').src = CONFIG.LOGO_URL || 'logo.png';
+$('logo').src = FS.logo();
 const setMsg = t => $('msg').textContent = t;
 const p2 = n => String(n).padStart(2, '0');
 
@@ -68,14 +69,15 @@ async function initTf() {
 }
 
 async function init() {
-  if (CFG_ERR) return setMsg('อ่านไฟล์ config.js ไม่ได้ กรุณาตรวจว่าไฟล์ชื่อ config.js (ตัวพิมพ์เล็ก) อยู่โฟลเดอร์เดียวกับหน้านี้ และมีเครื่องหมาย , คั่นระหว่างบรรทัด');
   try {
     await initTf();
-    fetch(CONFIG.API_URL).then(r => r.json()).then(c => {
+    FS.ping().then(c => {
+      if (!c.ok) { $('srv').textContent = 'เซิร์ฟเวอร์: เชื่อมต่อไม่ได้ - ' + c.error.split('\n')[0]; $('srv').style.color = '#ef4444'; return; }
+      $('srv').textContent = 'เซิร์ฟเวอร์: เชื่อมต่อแล้ว'; $('srv').style.color = '#22c55e';
       if (c.org) $('org').textContent = c.org;
       if (c.start) cfg.start = c.start;
       if (c.end) cfg.end = c.end;
-    }).catch(() => {});
+    });
     setMsg('กำลังโหลดโมเดลจดจำใบหน้า...');
     await Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri(MODEL),
@@ -112,10 +114,7 @@ async function send(descriptor) {
   if (!pos) return show({ ok: false, title: 'ยังไม่ได้ตำแหน่ง GPS', tag: 'กรุณาเปิด GPS แล้วลองใหม่' });
   setMsg('กำลังตรวจสอบ...');
   try {
-    const r = await fetch(CONFIG.API_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'scan', descriptor, lat: pos.latitude, lng: pos.longitude })
-    }).then(r => r.json());
+    const r = await FS.post('scan', { descriptor, lat: pos.latitude, lng: pos.longitude });
     if (!r.ok) return show({ ok: false, title: 'ไม่สำเร็จ', tag: r.error });
     if (r.type === 'IN') {
       const late = r.status === 'สาย';
@@ -128,7 +127,7 @@ async function send(descriptor) {
         tag: early ? 'ออกก่อนเวลา' : 'ออกงาน',
         sub: early ? 'ก่อนเวลา ' + cfg.end + ' น.' : '' });
     }
-  } catch (e) { show({ ok: false, title: 'เชื่อมต่อไม่ได้', tag: e.message }); }
+  } catch (e) { show({ ok: false, title: 'เชื่อมต่อไม่ได้', tag: e.message.split('\n')[0], sub: e.message.split('\n').slice(1).join(' / ') }); }
 }
 
 function show(o) {
