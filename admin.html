@@ -294,67 +294,55 @@ async function loadReport() {
             '</td><td class="c nw">' + (x.timeOut ? hms(secs(x.timeOut) - secs(x.timeIn)) : '-') + '</td>' : '') +
           '<td class="c">' + st + '</td></tr>';
       }).join('') + (rows.length ? '' : '<tr><td colspan="' + (full ? 9 : 5) + '" class="c muted">ไม่มีข้อมูลการลงเวลาในวันนี้</td></tr>') + '</tbody></table>';
+
     const lmap = {}; (r.leaves || []).forEach(l => lmap[l.userId] = l);
-LDATE = a;
-const abs = r.users.filter(u => !present.has(u.id));
-const nLeave = abs.filter(u => lmap[u.id]).length;
-h += '<p>สรุป: มาทำงาน <b>' + present.size + '</b> คน | มาสาย <b>' + nLate + '</b> คน | ออกก่อนเวลา <b>' + nEarly +
-  '</b> คน | ลา <b>' + nLeave + '</b> คน | ขาดงาน (ไม่ระบุสาเหตุ) <b>' + (abs.length - nLeave) + '</b> คน</p>';
-if (abs.length) h += '<p style="margin-bottom:4px"><b>รายชื่อผู้ไม่มาทำงาน</b></p>' +
-  '<table><thead><tr><th class="c ord">ลำดับ</th><th class="nm">ชื่อ-สกุล</th><th class="c">สาเหตุ</th>' +
-  '<th class="noprint">หมายเหตุ</th></tr></thead><tbody>' +
-  abs.map((u, i) => {
-    const l = lmap[u.id] || {};
-    return '<tr><td class="c">' + (i + 1) + '</td><td class="nm">' + esc(u.name) + '</td><td class="c">' +
-      '<select class="noprint" id="lt_' + u.id + '" onchange="setLeave(\'' + u.id + '\')">' +
-      '<option value="">- ไม่ระบุ -</option>' +
-      LTYPES.map(t => '<option' + (l.type === t ? ' selected' : '') + '>' + t + '</option>').join('') + '</select>' +
-      '<span class="printonly">' + esc(l.type || 'ไม่ระบุ') + (l.note ? ' (' + esc(l.note) + ')' : '') + '</span></td>' +
-      '<td class="noprint"><input id="ln_' + u.id + '" value="' + esc(l.note || '') + '" placeholder="เช่น ไข้หวัด" ' +
-      'onchange="setLeave(\'' + u.id + '\')"></td></tr>';
-  }).join('') + '</tbody></table>';
-      abs.map((u, i) => '<div>' + (i + 1) + '. ' + esc(u.name) + '</div>').join('');
+    LDATE = a;
+    const abs = r.users.filter(u => !present.has(u.id));
+    const nLeave = abs.filter(u => lmap[u.id]).length;
+    h += '<p>สรุป: มาทำงาน <b>' + present.size + '</b> คน | มาสาย <b>' + nLate + '</b> คน | ออกก่อนเวลา <b>' + nEarly +
+      '</b> คน | ลา <b>' + nLeave + '</b> คน | ขาดงาน (ไม่ระบุสาเหตุ) <b>' + (abs.length - nLeave) + '</b> คน</p>';
+    if (abs.length) h += '<p style="margin-bottom:4px"><b>รายชื่อผู้ไม่มาทำงาน</b></p>' +
+      '<table><thead><tr><th class="c ord">ลำดับ</th><th class="nm">ชื่อ-สกุล</th><th class="c">สาเหตุ</th>' +
+      '<th class="noprint">หมายเหตุ</th></tr></thead><tbody>' +
+      abs.map((u, i) => {
+        const l = lmap[u.id] || {};
+        return '<tr><td class="c">' + (i + 1) + '</td><td class="nm">' + esc(u.name) + '</td><td class="c">' +
+          '<select class="noprint" id="lt_' + u.id + '" onchange="setLeave(\'' + u.id + '\')">' +
+          '<option value="">- ไม่ระบุ -</option>' +
+          LTYPES.map(t => '<option' + (l.type === t ? ' selected' : '') + '>' + t + '</option>').join('') + '</select>' +
+          '<span class="printonly">' + esc(l.type || 'ไม่ระบุ') + (l.note ? ' (' + esc(l.note) + ')' : '') + '</span></td>' +
+          '<td class="noprint"><input id="ln_' + u.id + '" value="' + esc(l.note || '') + '" placeholder="เช่น ไข้หวัด" ' +
+          'onchange="setLeave(\'' + u.id + '\')"></td></tr>';
+      }).join('') + '</tbody></table>';
   } else {
-  const by = {}, today = fmt(new Date());
-  const mk = (id, name, created) => ({ id, name, created, days: 0, late: 0, h: 0, lv: {}, lp: 0 });
-  r.users.forEach(u => by[u.id] = mk(u.id, u.name, u.createdAt || ''));
-  r.rows.forEach(x => {
-    const u = by[x.userId] || (by[x.userId] = mk(x.userId, x.name, ''));
-    u.days++; if (x.status === 'สาย') u.late++; u.h += hrs(x.timeIn, x.timeOut);
-  });
-  const att = new Set(r.rows.map(x => x.userId + '|' + x.date));
-  (r.leaves || []).forEach(l => {
-    const u = by[l.userId];
-    if (!u || !(parse(l.date).getDay() % 6) || att.has(l.userId + '|' + l.date)) return; // ข้ามเสาร์-อาทิตย์ / วันที่มีสแกนแล้ว
-    u.lv[l.type] = (u.lv[l.type] || 0) + 1;
-    if (l.date <= today) u.lp++;
-  });
-  const list = Object.values(by).sort((p, q) => p.id.localeCompare(q.id));
-  h += '<table><thead><tr><th class="c ord">ลำดับ</th><th class="nw">รหัส</th><th class="nm">ชื่อ-สกุล</th>' +
-    '<th class="c">มาทำงาน (วัน)</th><th class="c">มาสาย (ครั้ง)</th>' +
-    LTYPES.map(t => '<th class="c">' + t + ' (วัน)</th>').join('') +
-    '<th class="c">ขาดงาน (วัน)</th><th class="c">รวมชั่วโมงทำงาน</th></tr></thead><tbody>' +
-    list.map((u, i) => {
-      const from = u.created && u.created > a ? u.created : a;
-      const abs = Math.max(0, workdays(from, b, r.end) - u.days - u.lp);
-      return '<tr><td class="c">' + (i + 1) + '</td><td class="nw">' + esc(u.id) + '</td><td class="nm">' + esc(u.name) +
-        '</td><td class="c">' + u.days + '</td><td class="c ' + (u.late ? 'late' : '') + '">' + u.late + '</td>' +
-        LTYPES.map(t => '<td class="c">' + (u.lv[t] || '-') + '</td>').join('') +
-        '<td class="c ' + (abs ? 'late' : '') + '">' + abs + '</td><td class="c">' + hm(u.h) + '</td></tr>';
-    }).join('') + (list.length ? '' : '<tr><td colspan="11" class="c muted">ไม่มีข้อมูล</td></tr>') + '</tbody></table>' +
-    '<p class="muted">ขาดงาน = วันทำการ (จันทร์-ศุกร์) ที่ผ่านมาแล้ว ซึ่งไม่มีบันทึกเข้างานและไม่ได้ระบุสาเหตุการลา (ยังไม่หักวันหยุดนักขัตฤกษ์)</p>';
-});
+    const by = {}, today = fmt(new Date());
+    const mk = (id, name, created) => ({ id, name, created, days: 0, late: 0, h: 0, lv: {}, lp: 0 });
+    r.users.forEach(u => by[u.id] = mk(u.id, u.name, u.createdAt || ''));
+    r.rows.forEach(x => {
+      const u = by[x.userId] || (by[x.userId] = mk(x.userId, x.name, ''));
+      u.days++; if (x.status === 'สาย') u.late++; u.h += hrs(x.timeIn, x.timeOut);
+    });
+    const att = new Set(r.rows.map(x => x.userId + '|' + x.date));
+    (r.leaves || []).forEach(l => {
+      const u = by[l.userId];
+      if (!u || !(parse(l.date).getDay() % 6) || att.has(l.userId + '|' + l.date)) return; // ข้ามเสาร์-อาทิตย์ / วันที่มีสแกนแล้ว
+      u.lv[l.type] = (u.lv[l.type] || 0) + 1;
+      if (l.date <= today) u.lp++;
+    });
     const list = Object.values(by).sort((p, q) => p.id.localeCompare(q.id));
-    h += '<table><thead><tr><th class="c ord">ลำดับ</th><th class="nw">รหัส</th><th class="nm">ชื่อ-สกุล</th><th class="c">มาทำงาน (วัน)</th><th class="c">มาสาย (ครั้ง)</th>' +
+    h += '<table><thead><tr><th class="c ord">ลำดับ</th><th class="nw">รหัส</th><th class="nm">ชื่อ-สกุล</th>' +
+      '<th class="c">มาทำงาน (วัน)</th><th class="c">มาสาย (ครั้ง)</th>' +
+      LTYPES.map(t => '<th class="c">' + t + ' (วัน)</th>').join('') +
       '<th class="c">ขาดงาน (วัน)</th><th class="c">รวมชั่วโมงทำงาน</th></tr></thead><tbody>' +
       list.map((u, i) => {
         const from = u.created && u.created > a ? u.created : a;
-        const abs = Math.max(0, workdays(from, b, r.end) - u.days);
-        return '<tr><td class="c">' + (i + 1) + '</td><td class="nw">' + esc(u.id) + '</td><td class="nm">' + esc(u.name) + '</td><td class="c">' + u.days +
-          '</td><td class="c ' + (u.late ? 'late' : '') + '">' + u.late + '</td><td class="c ' + (abs ? 'late' : '') + '">' + abs +
-          '</td><td class="c">' + hm(u.h) + '</td></tr>';
-      }).join('') + (list.length ? '' : '<tr><td colspan="7" class="c muted">ไม่มีข้อมูล</td></tr>') + '</tbody></table>' +
-      '<p class="muted">ขาดงาน = วันทำการ (จันทร์-ศุกร์) ที่ผ่านมาแล้ว ซึ่งไม่มีบันทึกเข้างาน (ยังไม่หักวันหยุดนักขัตฤกษ์/วันลา)</p>';
+        const abs = Math.max(0, workdays(from, b, r.end) - u.days - u.lp);
+        return '<tr><td class="c">' + (i + 1) + '</td><td class="nw">' + esc(u.id) + '</td><td class="nm">' + esc(u.name) +
+          '</td><td class="c">' + u.days + '</td><td class="c ' + (u.late ? 'late' : '') + '">' + u.late + '</td>' +
+          LTYPES.map(t => '<td class="c">' + (u.lv[t] || '-') + '</td>').join('') +
+          '<td class="c ' + (abs ? 'late' : '') + '">' + abs + '</td><td class="c">' + hm(u.h) + '</td></tr>';
+      }).join('') + (list.length ? '' : '<tr><td colspan="11" class="c muted">ไม่มีข้อมูล</td></tr>') + '</tbody></table>' +
+      '<p class="muted">ขาดงาน = วันทำการ (จันทร์-ศุกร์) ที่ผ่านมาแล้ว ซึ่งไม่มีบันทึกเข้างานและไม่ได้ระบุสาเหตุการลา (ยังไม่หักวันหยุดนักขัตฤกษ์)</p>';
   }
   if (!r.rows.length) h += '<p class="muted">ไม่พบข้อมูลในช่วงวันที่นี้ (ชีต Attendance มีข้อมูล ' + (r.sheetRows ?? '?') + ' แถว, วันที่ล่าสุดในชีต: ' + (r.lastDate || '-') + ')</p>';
   h += '<div class="sign"><div>ลงชื่อ ................................ ผู้จัดทำ<br>( ................................ )</div>' +
