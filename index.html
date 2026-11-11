@@ -1,216 +1,152 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FaceScan — ลงเวลาเข้างาน</title>
-<link rel="stylesheet" href="style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ECT KPP FaceScanner Attendance System</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  .topbar{max-width:1200px;width:calc(100% - 40px);margin:20px auto 0;padding:14px 22px;display:flex;justify-content:space-between;align-items:center}
-  .layout{max-width:1200px;margin:20px auto;padding:0 20px;display:grid;grid-template-columns:1.6fr 1fr;gap:20px}
-  .cam-card{padding:18px}
-  .cam{position:relative;aspect-ratio:4/3;border-radius:18px;overflow:hidden;background:#000}
-  .cam video,.cam canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
-  .frame{position:absolute;inset:10% 22%;pointer-events:none}
-  .frame i{position:absolute;width:42px;height:42px;border:3px solid rgba(255,255,255,.9);filter:drop-shadow(0 0 8px var(--a2))}
-  .frame i:nth-child(1){top:0;left:0;border-right:0;border-bottom:0;border-top-left-radius:18px}
-  .frame i:nth-child(2){top:0;right:0;border-left:0;border-bottom:0;border-top-right-radius:18px}
-  .frame i:nth-child(3){bottom:0;left:0;border-right:0;border-top:0;border-bottom-left-radius:18px}
-  .frame i:nth-child(4){bottom:0;right:0;border-left:0;border-top:0;border-bottom-right-radius:18px}
-  .scanline{position:absolute;left:6%;right:6%;height:3px;border-radius:3px;
-    background:linear-gradient(90deg,transparent,var(--a2),transparent);box-shadow:0 0 18px var(--a2);animation:scan 2.4s ease-in-out infinite}
-  @keyframes scan{0%,100%{top:4%}50%{top:94%}}
-  body.checking .scanline{animation-duration:.7s;background:linear-gradient(90deg,transparent,var(--ok),transparent);box-shadow:0 0 18px var(--ok)}
-  .cam-hint{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);padding:10px 22px;border-radius:999px;white-space:nowrap;font-size:.95rem}
-  .chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-  .side{display:flex;flex-direction:column;gap:20px}
-  .clock{padding:28px;text-align:center}
-  .time{font-size:3.6rem;font-weight:600;letter-spacing:2px;font-variant-numeric:tabular-nums;
-    background:linear-gradient(90deg,#fff,#c4b5fd,#67e8f9);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .shift{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
-  .shift div{padding:12px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}
-  .shift b{display:block;font-size:1.3rem;margin-top:2px}
-  .recent{padding:22px;flex:1}
-  .recent ul{list-style:none;display:flex;flex-direction:column;gap:10px;margin-top:14px}
-  .recent li{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.06);animation:slideIn .4s}
-  .recent .meta{flex:1;min-width:0} .recent .meta small{color:var(--muted)}
-  .result{padding:40px 48px;text-align:center;min-width:320px}
-  .ring{width:100px;height:100px;margin:0 auto 18px;border-radius:50%;display:grid;place-items:center;font-size:2.8rem;
-    border:2px solid var(--ok);background:rgba(52,211,153,.12);box-shadow:0 0 40px rgba(52,211,153,.45)}
-  .ring.out{border-color:var(--a2);background:rgba(34,211,238,.12);box-shadow:0 0 40px rgba(34,211,238,.45)}
-  .ring.dup{border-color:var(--warn);background:rgba(251,191,36,.12);box-shadow:0 0 40px rgba(251,191,36,.45)}
-  .r-type{margin-top:16px;color:var(--muted)}
-  .r-time{font-size:2.4rem;font-weight:600;margin:2px 0 10px;font-variant-numeric:tabular-nums}
-  @media(max-width:860px){.layout{grid-template-columns:1fr}.time{font-size:2.8rem}}
+:root{--bg:#0f172a;--tx:#f1f5f9;--mut:#94a3b8;--ok:#22c55e;--bad:#ef4444;--warn:#f59e0b;--ac:#38bdf8}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--tx);font-family:'Sarabun',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;padding:16px}
+.logo{height:72px;width:auto;margin-bottom:6px}
+h1{font-size:1.2rem;margin:2px 0;text-align:center}
+.clock{color:var(--ac);font-size:.95rem;margin:2px 0 12px;text-align:center}
+.cam{position:relative;width:100%;max-width:420px;aspect-ratio:3/4;background:#000;border-radius:20px;overflow:hidden;border:3px solid var(--ac)}
+.cam video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.ring{position:absolute;inset:12% 14%;border:3px dashed rgba(255,255,255,.55);border-radius:50%;pointer-events:none}
+.msg{margin-top:14px;font-size:1.1rem;text-align:center;min-height:1.6em}
+.gps{margin-top:6px;font-size:.85rem;color:var(--mut)}
+.result{display:none;position:absolute;inset:0;background:rgba(15,23,42,.94);flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
+.result.show{display:flex}
+.result .icon{font-size:3.4rem}
+.result .big{font-size:1.6rem;font-weight:700;margin:6px 0}
+.result .eid{color:var(--mut);font-size:.9rem}
+.result .tag{font-size:1.5rem;font-weight:700;margin:8px 0}
+.result .tm{font-size:2.2rem;font-weight:700}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+.sub{color:var(--mut);font-size:.9rem}
+a.admin{margin-top:18px;color:var(--mut);font-size:.85rem}
 </style>
 </head>
 <body>
-<div class="bg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
-
-<header class="topbar glass">
-  <div class="brand">
-    <div class="logo">FS</div>
-    <div><h1 id="orgName">FaceScan</h1><small class="muted">ระบบลงเวลาด้วยใบหน้า</small></div>
-  </div>
-  <a href="admin.html" class="btn btn-sm">ผู้ดูแลระบบ</a>
-</header>
-
-<main class="layout">
-  <section class="cam-card glass">
-    <div class="cam">
-      <video id="video" autoplay muted playsinline></video>
-      <canvas id="overlay"></canvas>
-      <div class="frame"><i></i><i></i><i></i><i></i><div class="scanline"></div></div>
-      <div class="cam-hint glass" id="hint">กำลังเตรียมระบบ...</div>
-    </div>
-    <div class="chips">
-      <span class="chip warn" id="chipModel"><span class="dot"></span><span>กำลังโหลด AI</span></span>
-      <span class="chip warn" id="chipCam"><span class="dot"></span><span>กำลังเปิดกล้อง</span></span>
-      <span class="chip warn" id="chipGps"><span class="dot"></span><span>กำลังหาตำแหน่ง</span></span>
-    </div>
-  </section>
-
-  <aside class="side">
-    <div class="clock glass">
-      <div class="time" id="time">00:00:00</div>
-      <div class="muted" id="date"></div>
-      <div class="shift">
-        <div><small class="muted">เวลาเข้างาน</small><b id="ws">--:--</b></div>
-        <div><small class="muted">เวลาเลิกงาน</small><b id="we">--:--</b></div>
-      </div>
-    </div>
-    <div class="recent glass">
-      <h3>สแกนล่าสุด</h3>
-      <ul id="recent"><li class="muted" style="justify-content:center">ยังไม่มีการสแกน</li></ul>
-    </div>
-  </aside>
-</main>
-
-<div class="modal" id="resultModal">
-  <div class="glass result">
-    <div class="ring" id="rIcon">✓</div>
-    <h2 id="rName"></h2>
-    <p class="muted" id="rPos"></p>
-    <div class="r-type" id="rType"></div>
-    <div class="r-time" id="rTime"></div>
-    <span class="badge" id="rStatus"></span>
-  </div>
+<img class="logo" id="logo" alt="" onerror="this.style.display='none'">
+<h1 id="org">ECT KPP FaceScanner Attendance System</h1>
+<div class="clock" id="clock"></div>
+<div class="cam">
+  <video id="v" playsinline muted></video>
+  <div class="ring"></div>
+  <div class="result" id="res"></div>
 </div>
+<div class="msg" id="msg">กำลังเริ่มต้น...</div>
+<div class="gps" id="gps">GPS: รอตำแหน่ง...</div>
+<a class="admin" href="admin.html">สำหรับผู้ดูแลระบบ</a>
 
-<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
 <script src="config.js"></script>
 <script>
-const video = $('video'), canvas = $('overlay');
-let pos = null, busy = false, cooldown = 0, stable = 0;
-const recent = [];
+const MODEL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
+const TH_M = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const $ = id => document.getElementById(id);
+let pos = null, busy = false, hits = 0, cfg = { start: '08:30', end: '16:30' };
 
-function setChip(id, state, text) { const c = $(id); c.className = 'chip ' + state; c.lastElementChild.textContent = text; }
-function hint(t) { $('hint').textContent = t; }
+const CFG_ERR = typeof CONFIG === 'undefined' || !CONFIG.API_URL;
+if (typeof CONFIG === 'undefined') window.CONFIG = {};
+$('logo').src = CONFIG.LOGO_URL || 'https://drive.google.com/thumbnail?id=1mrJbjgs8PdZS-5jKImMdYR2Ng2w0WdLA&sz=w600';
+const setMsg = t => $('msg').textContent = t;
+const p2 = n => String(n).padStart(2, '0');
 
 function tick() {
-  const n = new Date();
-  $('time').textContent = n.toLocaleTimeString('th-TH', { hour12: false });
-  $('date').textContent = n.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const d = new Date();
+  $('clock').textContent = 'วันที่ ' + d.getDate() + ' ' + TH_M[d.getMonth()] + ' พ.ศ. ' + (d.getFullYear() + 543) +
+    '  เวลา ' + p2(d.getHours()) + ':' + p2(d.getMinutes()) + ':' + p2(d.getSeconds()) + ' น.';
 }
 setInterval(tick, 1000); tick();
 
+async function initTf() {
+  try { await faceapi.tf.setBackend('webgl'); await faceapi.tf.ready(); }
+  catch (e) { await faceapi.tf.setBackend('cpu'); await faceapi.tf.ready(); }
+}
+
 async function init() {
+  if (CFG_ERR) return setMsg('อ่านไฟล์ config.js ไม่ได้ กรุณาตรวจว่าไฟล์ชื่อ config.js (ตัวพิมพ์เล็ก) อยู่โฟลเดอร์เดียวกับหน้านี้ และมีเครื่องหมาย , คั่นระหว่างบรรทัด');
   try {
-    const modelP = loadModels().then(() => setChip('chipModel', 'ok', 'AI พร้อมใช้งาน'));
-    const cfgP = api('config').then(r => {
-      if (!r.ok) throw r.error;
-      $('orgName').textContent = r.config.ORG_NAME;
-      $('ws').textContent = r.config.WORK_START;
-      $('we').textContent = r.config.WORK_END;
-    });
-    startGPS();
-    await startCam();
-    await Promise.all([modelP, cfgP]);
-    hint('มองตรงไปที่กล้อง');
+    await initTf();
+    fetch(CONFIG.API_URL).then(r => r.json()).then(c => {
+      if (c.org) $('org').textContent = c.org;
+      if (c.start) cfg.start = c.start;
+      if (c.end) cfg.end = c.end;
+    }).catch(() => {});
+    setMsg('กำลังโหลดโมเดลจดจำใบหน้า...');
+    await Promise.all([
+      faceapi.nets.tinyFaceDetector.loadFromUri(MODEL),
+      faceapi.nets.faceLandmark68Net.loadFromUri(MODEL),
+      faceapi.nets.faceRecognitionNet.loadFromUri(MODEL)
+    ]);
+    navigator.geolocation.watchPosition(
+      p => { pos = p.coords; $('gps').textContent = 'GPS พร้อมใช้งาน (±' + Math.round(p.coords.accuracy) + ' ม.)'; },
+      () => { pos = null; $('gps').textContent = 'GPS: กรุณาอนุญาตการเข้าถึงตำแหน่ง'; },
+      { enableHighAccuracy: true, maximumAge: 5000 });
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 }, audio: false });
+    $('v').srcObject = stream;
+    await $('v').play();
     loop();
   } catch (e) {
-    hint('เกิดข้อผิดพลาด'); toast('เริ่มระบบไม่สำเร็จ: ' + e, 'err');
+    setMsg('เปิดกล้องไม่ได้: ' + e.message);
   }
-}
-
-async function startCam() {
-  try {
-    const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }, audio: false });
-    video.srcObject = s; await video.play();
-    setChip('chipCam', 'ok', 'กล้องพร้อม');
-  } catch (e) { setChip('chipCam', 'err', 'เปิดกล้องไม่ได้'); throw 'ไม่ได้รับสิทธิ์ใช้กล้อง'; }
-}
-
-function startGPS() {
-  if (!navigator.geolocation) return setChip('chipGps', 'err', 'ไม่รองรับ GPS');
-  navigator.geolocation.watchPosition(
-    p => { pos = { lat: p.coords.latitude, lng: p.coords.longitude }; setChip('chipGps', 'ok', `GPS ±${Math.round(p.coords.accuracy)} ม.`); },
-    () => setChip('chipGps', 'err', 'กรุณาเปิดตำแหน่ง'),
-    { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
-  );
 }
 
 async function loop() {
-  if (!busy && Date.now() > cooldown && video.readyState >= 2) {
-    const det = await faceapi.detectSingleFace(video, detOpts()).withFaceLandmarks().withFaceDescriptor();
-    draw(det);
-    if (det && det.detection.score > 0.6) {
-      stable++;
-      hint(stable < 3 ? 'พบใบหน้าแล้ว นิ่งไว้สักครู่...' : 'กำลังตรวจสอบ...');
-      if (stable >= 3) {
-        stable = 0;
-        if (!pos) hint('กำลังรอสัญญาณ GPS...');
-        else await send(det.descriptor);
-      }
-    } else { stable = 0; if (Date.now() > cooldown) hint('มองตรงไปที่กล้อง'); }
+  if (!busy) {
+    const det = await faceapi
+      .detectSingleFace($('v'), new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.6 }))
+      .withFaceLandmarks().withFaceDescriptor();
+    if (det) {
+      hits++;
+      setMsg('ตรวจพบใบหน้า กรุณาอยู่นิ่งสักครู่...');
+      if (hits >= 3) { busy = true; hits = 0; await send(Array.from(det.descriptor)); }
+    } else { hits = 0; setMsg('กรุณามองกล้อง'); }
   }
-  setTimeout(loop, 250);
-}
-
-function draw(det) {
-  const w = video.videoWidth, h = video.videoHeight;
-  canvas.width = w; canvas.height = h;
-  const ctx = canvas.getContext('2d'); ctx.clearRect(0, 0, w, h);
-  if (!det) return;
-  const b = det.detection.box;
-  ctx.strokeStyle = 'rgba(34,211,238,.95)'; ctx.lineWidth = 3;
-  ctx.shadowColor = '#22d3ee'; ctx.shadowBlur = 18;
-  ctx.beginPath(); ctx.roundRect(b.x, b.y, b.width, b.height, 18); ctx.stroke();
+  setTimeout(loop, 400);
 }
 
 async function send(descriptor) {
-  busy = true; document.body.classList.add('checking');
+  if (!pos) return show({ ok: false, title: 'ยังไม่ได้ตำแหน่ง GPS', tag: 'กรุณาเปิด GPS แล้วลองใหม่' });
+  setMsg('กำลังตรวจสอบ...');
   try {
-    const r = await api('scan', { descriptor: Array.from(descriptor), lat: pos.lat, lng: pos.lng });
-    if (r.ok) showResult(r); else { toast(r.error, 'err'); hint(r.error); }
-  } catch (e) { toast('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้', 'err'); }
-  cooldown = Date.now() + 4000; busy = false; document.body.classList.remove('checking');
+    const r = await fetch(CONFIG.API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'scan', descriptor, lat: pos.latitude, lng: pos.longitude })
+    }).then(r => r.json());
+    if (!r.ok) return show({ ok: false, title: 'ไม่สำเร็จ', tag: r.error });
+    if (r.type === 'IN') {
+      const late = r.status === 'สาย';
+      show({ ok: true, warn: late, title: r.name, id: r.id, time: r.time, note: r.note,
+             tag: late ? 'เข้างานสาย' : 'เข้างาน (ตรงเวลา)',
+             sub: late ? 'เกินเวลา ' + cfg.start + ' น.' : '' });
+    } else {
+      const early = r.status === 'ออกก่อนเวลา';
+      show({ ok: true, warn: early, title: r.name, id: r.id, time: r.time,
+             tag: early ? 'ออกก่อนเวลา' : 'ออกงาน',
+             sub: early ? 'ก่อนเวลา ' + cfg.end + ' น.' : '' });
+    }
+  } catch (e) { show({ ok: false, title: 'เชื่อมต่อไม่ได้', tag: e.message }); }
 }
 
-function showResult(r) {
-  const map = { IN: ['เข้างาน', '✓', ''], OUT: ['ออกงาน', '➜', 'out'], DUP: ['บันทึกไว้แล้ว', '!', 'dup'] };
-  const [label, icon, cls] = map[r.type];
-  $('rIcon').className = 'ring ' + cls; $('rIcon').textContent = icon;
-  $('rName').textContent = r.name;
-  $('rPos').textContent = `${r.position || ''} · รหัส ${r.id}`;
-  $('rType').textContent = label;
-  $('rTime').textContent = r.time;
-  $('rStatus').textContent = r.status;
-  $('rStatus').className = 'badge ' + (r.status === 'ปกติ' ? 'ok' : 'warn');
-  $('resultModal').classList.add('show');
-  setTimeout(() => $('resultModal').classList.remove('show'), 3500);
-
-  if (r.type !== 'DUP') {
-    recent.unshift(r); recent.splice(5);
-    $('recent').innerHTML = recent.map(x => `
-      <li><span class="avatar">${x.name.charAt(0)}</span>
-        <div class="meta"><b>${x.name}</b><br><small>${x.type === 'IN' ? 'เข้างาน' : 'ออกงาน'} · ${x.time}</small></div>
-        <span class="badge ${x.status === 'ปกติ' ? 'ok' : 'warn'}">${x.status}</span></li>`).join('');
-  }
+function show(o) {
+  const cls = !o.ok ? 'bad' : (o.warn ? 'warn' : 'ok');
+  const icon = !o.ok ? '✖' : (o.warn ? '⚠' : '✔');
+  $('res').innerHTML = '<div class="icon ' + cls + '">' + icon + '</div>' +
+    '<div class="big">' + o.title + '</div>' + (o.id ? '<div class="eid">รหัส ' + o.id + '</div>' : '') +
+    '<div class="tag ' + cls + '">' + (o.tag || '') + '</div>' +
+    (o.time ? '<div class="tm">' + o.time + ' น.</div>' : '') +
+    (o.sub ? '<div class="sub">' + o.sub + '</div>' : '') +
+    (o.note ? '<div class="sub">' + o.note + '</div>' : '');
+  $('res').classList.add('show');
+  setTimeout(() => { $('res').classList.remove('show'); busy = false; hits = 0; }, 4500);
 }
 
 init();
 </script>
-  <link rel="stylesheet" href="theme-scan.css?v=1">
 </body>
-</html>
+</html> 
