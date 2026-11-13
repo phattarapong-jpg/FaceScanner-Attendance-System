@@ -82,6 +82,7 @@ if (typeof CONFIG === 'undefined') window.CONFIG = {};
 $('logo').src = CONFIG.LOGO_URL || 'https://drive.google.com/thumbnail?id=1mrJbjgs8PdZS-5jKImMdYR2Ng2w0WdLA&sz=w600';
 const setMsg = t => $('msg').textContent = t;
 const p2 = n => String(n).padStart(2, '0');
+const km = m => Number((m / 1000).toFixed(3)) + ' กม.';
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 function tick() {
@@ -110,8 +111,8 @@ function updateZone() {
   const d = Math.round(haversine(pos.latitude, pos.longitude, cfg.lat, cfg.lng));
   const inside = d <= cfg.radius, was = zone;
   zone = { in: inside, dist: d };
-  if (inside) setZone('in', '✅ อยู่ในพื้นที่ทำงาน<small>ห่างจุดทำงาน ' + d + ' ม. (อนุญาตไม่เกิน ' + cfg.radius + ' ม.)</small>');
-  else setZone('out', '⚠ อยู่นอกพื้นที่ทำงาน<small>ห่างจุดทำงาน ' + d + ' ม. (อนุญาตไม่เกิน ' + cfg.radius + ' ม.) ไม่สามารถลงเวลาได้</small>');
+  if (inside) setZone('in', '✅ อยู่ในพื้นที่ทำงาน<small>ห่างจุดทำงาน ' + km(d) + '</small>');
+  else setZone('out', '⚠ อยู่นอกพื้นที่ทำงาน<small>ห่างจุดทำงาน ' + km(d) + ' ไม่สามารถลงเวลาได้</small>');
   if (was && was.in !== inside && navigator.vibrate) navigator.vibrate(inside ? 80 : [120, 60, 120]);
 }
 
@@ -170,7 +171,8 @@ async function loop() {
 }
 async function send(descriptor) {
   if (!pos) return show({ ok: false, title: 'ยังไม่ได้ตำแหน่ง GPS', tag: 'กรุณาเปิด GPS แล้วลองใหม่' });
-  if (zone && !zone.in) return show({ ok: false, title: 'อยู่นอกพื้นที่ทำงาน', tag: 'ห่างจุดทำงาน ' + zone.dist + ' ม.' });
+  // บรรทัด tag ของกรณีอยู่นอกพื้นที่
+if (zone && !zone.in) return show({ ok: false, title: 'อยู่นอกพื้นที่ทำงาน', tag: 'ห่างจุดทำงาน ' + km(zone.dist) });
   setMsg('กำลังตรวจสอบ...');
   try {
     const r = await fetch(CONFIG.API_URL, {
@@ -179,7 +181,8 @@ async function send(descriptor) {
     }).then(r => r.json());
     if (!r.ok) return show({ ok: false, title: 'ไม่สำเร็จ', tag: r.error });
     const d = r.dist != null ? r.dist : (zone ? zone.dist : null);
-    const zn = d != null ? '📍 อยู่ในพื้นที่ทำงาน (ห่างจุดทำงาน ' + d + ' ม.)' : '';
+    // บรรทัดสร้างข้อความ zn
+const zn = d != null ? '📍 อยู่ในพื้นที่ทำงาน (ห่างจุดทำงาน ' + km(d) + ')' : '';
     if (r.type === 'IN') {
       const late = r.status === 'สาย';
       show({ ok: true, warn: late, title: r.name, id: r.id, time: r.time, note: r.note, zn: zn,
